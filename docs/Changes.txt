@@ -1,0 +1,511 @@
+JFileSync Change History
+
+
+Version 2.2 (2007/07/20)
+- Added the following new features:
+  - Added new dialog to specify local and external/server directory pairs.
+  - System icons are shown for local files of the sync table.
+  - German language pack for GUI.
+  - You may specify file properties and the range for regular expression-based
+    filters.
+  - A properties windows may be invoked via the pop-up menu of the
+    synchronization table if only one element is selected.
+  - The root elements (directory pairs of your profile) are explicitly shown
+    in the synchronization table (different icon and background color) and it
+    is not possible to change actions of root elements any more.
+  - The view on the synchronization table is updated on-the-fly during
+    comparison and synchronization.
+  - Added new option to control whether manual changes of actions in the
+    synchronization table should be kept when switching between synchronization
+    modes.
+  - Manual changes of actions in the synchronization table are highlighted in
+    blue color and may be reset (that is, set to the default action for the
+    current synchronization mode) via the context menu.
+  - Added debug mode control for the command line, removed test run mode
+    completely.
+  - Added a new profile attribute to control whether write protection of a
+    file is replicated during synchronization.
+  - Added new option to start and stop the JFS server as a (kind of) service.
+- Improved the following existing features:
+  - Increased the width of some dialogs.
+  - Perform additional check for all GUI table row and column sizes.
+  - Clear synchronization table selection when updating table.
+- Fixed the following bugs:
+  - The server base and pass phrase could not be set using the command line
+    and the GUI.
+  - Added missing translation string "Mode: " for JFSMainView.
+  - Fixed equals method of JFSFilter. If a filter was specified, the
+    synchronization table was updated every time the OK button of the profile
+    manager was pressed (independent from performed profile changes).
+  - Added dispose to close operation of info view.
+  - Toogle details is on "Show details" whenever comparison or synchronization
+    is started; that is, it is reset properly.
+  - Prevent Null pointer exception when JFS command line server is started
+    without proper "System.in".
+  - Fixed need for X11 (graphics context) when started with "-nogui".
+  - Show progress command line print only when there is something to show.
+  - Clean configuration object at the beginning, if main method is used as
+    part of service wrapper.
+  - Fixed overwriting the history, if root element is not active.
+- News behind the scene (developer-specific):
+  - New class JFSPropertiesView for file properties.
+  - JFSComparisonTable was renamed to JFSTableView. The renderer and mouse and
+    action listener components were extracted to JFSTableRenderer and
+    JFSTableListener, respectively.
+  - Extracted view management from JFSTask to JFSTable. Only the current view
+    is kept in memory. If a new view is selected, the current view is changed
+    accordingly.
+  - JFSRootElement extends JFSElement in order to store root directory pairs
+    in the synchronization table. A root element also stores corresponding
+    file producers (moved from JFSComparison) and the history.
+  - The parent and all children are stored for each JFSElement so that the
+    directory structure is available all the time. Furthermore, the root
+    element to which each JFS element belongs is stored, too.
+  - The synchronization actions can be computed for a single JFS element
+    without having knowledge about the rest of the synchronization table.
+    When a comparison is performed, the actions are computed on-the-fly.
+  - Removed class JFSTask and moved its functionality to singletons JFSTable,
+    JFSComparison, and JFSSynchronization. The comparison and synchronization
+    are performed using the JFS table from now on and don't have to be called
+    for each JFS directory pair separately, like it was before.
+  - Corrected lower/upper case in all properties files.
+
+
+Version 2.1 (2005/10/08)
+- Added the following new features:
+  - You may change the performed actions for elements of the main table via
+    a popup menu. You may also activate and deactivate the table elements.
+    The mechanism works for multiple interval selections.
+  - Added new action in order to delete source file as well as target file
+    (must be set manually for selected files).
+  - JFS displays a warning in case of not stored profile settings when loading
+    a new one.
+  - Added three new views on the main action table in order to exclusively view
+    files to copy, files to delete, and ambiguous files.
+  - Added button to re-browse already added directory pairs in the profile
+    manager.
+- Improved the following existing features:
+  - Simplified user interface before confirming synchronization start and
+    viewing synchronization progress. You may show and hide synchronization
+    details.
+  - The histories are sorted according to the last synchronization date.
+  - Unused history files are automatically deleted from the configuration
+    directory.
+  - The Unix shell script uses Unix line delimiters and is UTF-8 encoded.
+  - The previous JFS session is only restored (in graphical mode) if a non
+    profile-related command line option was specified.
+  - If you create a new profile, the profile manager is opened automatically.
+  - Corrected some naming problems and wrong/misleading strings, like
+    'define profile' was renamed to 'edit profile'.
+  - The table presented in the main JFS window presents the file entries
+    according the sequence specified in the profile manager.
+  - Changed the names of the views in order to better reflect the displayed
+    actions.
+  - Enable and disable up, down, change, remove, select, de-select, clear, and
+    clear all button throughout all windows according to the corresponding list
+    selection state.
+  - The last visited directories are separately stored for source and target
+    directories of JFS directory pairs.
+  - Improved detection of JFS JAR file location.
+- Fixed the following bugs:
+  - The JFS library was not found using the Windows batch file, when JFS was
+    installed to a directory containing spaces in its path name.
+  - The synchronization history was not added to the list of histories if a
+    history existed that had the same source as the one that should be added.
+  - The LAF was not changed at program start according to the stored settings.
+  - An element (consisting of matching source and target file) was only added
+    to the history if both files were equal. If a synchronization was
+    interrupted or an element was de-selected, the old history element
+    disappeared, which caused that the files of the element were considered as
+    completely new files for the next synchronization. From now on, history
+    items stay in the history even if the files represented are not equal.
+  - The progress bar value was not reset before showing up again.
+  - The method getStream of JFSLog has to be synchronized if the integrated
+    JFS server is used in order to avoid conflicts.
+  - All methods of JFSServerAccess have to be synchronized in order to
+    avoid conflicts if the same server is used for accessing source and target
+    file systems.
+- News behind the scene (developer-specific):
+  - The JFS version number is added to the XML settings file and all profiles.
+  - The Ant file of the development package creates and uses a configuration
+    directory located in the main application directory. This directory is
+    also deleted by the 'clean' target. The 'cleanall' target was renamed to
+    'clean-all'.
+  - Added QA plan and moved change history to 'docs'.
+  - The release version is extracted from the general JFS configuration file.
+  - The Ant 'test-client' target was renamed to 'test' and uses US English
+    locale.
+
+
+Version 2.0.1 (2005/08/15)
+- Added FAQ help page.
+- Added JFileSync icon to distributions.
+- Removed setting the default locale to en_US, use system defaults instead.
+  If you want a special locale, like de_DE, you may use the Java command
+  line options: java -Duser.language=de -Duser.region=DE ...
+- Corrected a bug with the '-quiet' command line option (no synchronization
+  was performed).
+
+
+Version 2.0 (2005/07/15)
+- JRE 5 is required in order to run JFS. The sources were updated in order to
+  be type-safe according to the Java 5 specification.
+- The used open source license was changed to the GNU General Public License as
+  published by the Free Software Foundation.
+- Added the following new features:
+   - From now on, JFileSync has a logo :-).
+   - You may specify files to include and exclude in a comparison by
+     regular expressions (specified via the command line or GUI).
+   - You may easily open the last 4 opened profiles via the GUI.
+     The location of the profiles is stored persistently.
+   - You may specify that the JFS server automatically shuts down after
+     synchronizing all specified directory pairs.
+   - If the lengths of source and target files differ or JFS is not sure what
+     to do with a certain file, the table cell color of the GUI's comparison
+     table is changed and a question mark is assigned.
+   - If a new error occurs and is written to the error log, a symbol is shown
+     in the JFS main window.
+   - The comparison table now shows the actual actions that have to be
+     performed in order to synchronize the file systems (and not just the
+     comparison of the files' time stamps). If you change the synchronization
+     mode the view on the comparison table is updated accordingly.
+   - The JFS GUI provides an assistant for newbies.
+   - The history of synchronizations (a list of synchronized files) for each
+     synchronized directory pair is stored by default in the JFS configuration
+     directory. This behavior may be switched on and off via the GUI and the
+     command line. All stored histories may be managed via the GUI.
+   - A new synchronization mode uses the newly introduced history in order
+     to determine actions for elements of the comparison table automatically.
+     This synchronization mode is the new default if you create a profile
+     from scratch. This makes it easier to keep the files synchronized even
+     when working on source and target side.
+   - If the synchronization algorithm is not sure what to do with a certain
+     file, it options ask the user before synchronizing. This works for
+     command line processing as well as for the GUI.
+- Improved the following existing features:
+   - Reworked help window and contents: Provide forward and backward history
+     and table of available help topics.
+   - Restructured menus of main JFS window in order to improve the usability:
+     - File: All file operations for profiles and general application actions.
+     - View: The currently used view on the comparison table.
+     - Mode: The currently applied synchronization mode.
+     - Tools: The provided JFS actions such as defining a profile,
+       comparison and synchronization as well as showing log files, and
+       access to the synchronization history.
+     - Plug-ins: All available plug-ins.
+     - Help: JFS help contents and application information.
+   - Use native table selection colors for all tables. Improved table cell
+     rendering.
+   - Reworked the update mechanism for configuration (profile) updates.
+   - Added an additional command line option for loading an existing profile
+     (apart from "-config") so that the program may be connected to a certain
+     file extension. The Windows batch file was adapted so that the JFS
+     library will be found even when the batch is called not from the JFS
+     home directory.
+   - Only one instance of the help window (and the new assistant window) can
+     be opened at the same time.
+   - The profile dialog was re-organized into four sections: (1) basic
+     settings, (2) advanced settings, (3) includes and excludes, and (4) server
+     settings. The command line help was adapted accordingly.
+   - Renamed the synchronization modes in order to make them more
+     understandable for newbies (hopefully ;-).
+   - Reworked GUI JFS information view.
+- Fixed the following bugs:
+   - After copying a file some post copy operations that were intended to be
+     performed with the target file were also performed with the source file.
+     This caused copy actions that include write protected files to fail.
+   - The main view did not display the overall size of the comparison table
+     (instead the size of the current view was displayed).
+   - The progress view did not reset the transferred number of bytes when it
+     was stopped or restarted.
+   - The table cell color of the comparison table was not reset properly
+     when a row was selected/deselected.
+   - A file is only copied when it's contents is readable and the target is
+     writable.
+   - All file attributes are transferred correctly after synchronization.
+- News behind the scene (developer-specific):
+   - The JFS server checks for compatibility with the corresponding JFS client
+     via the serial version UID introduced in JDK 5.
+   - The JFS file factory is reorganized into JFS file producer factories,
+     responsible for a certain URI scheme (like "ext"). The producer factories
+     create and destroy JFS file producers for a certain base directory.
+     All producers (and corresponding factories) are managed by a JFS file
+     producer manager. This allows easier integration of new producer
+     factories for different URI schemes. The classes for a certain scheme
+     have their own packages from now on: "jfs.sync.local" and
+     "jfs.sync.external".
+   - Improved robustness of JFS server start and stop via command line and GUI.
+   - The JFS configuration directory was changed to ".jfs", located in the
+     user's home directory.
+   - Avoid printing a warning (EOFException), when the JFS client is closed
+     before the server is terminated and the client socket on server side is
+     still alive.
+   - The specification of synchronization modes and view modes was completely
+     reorganized in order to reflect the new JFS features.
+   - JFSLog was introduced in order to deal with all error and standard log
+     messages.
+   - The classes for JFS shell processing were extracted and moved to the new
+     package "jfs.shell".
+   - The local JFS file reads in all file attributes when the object is
+     initialized (as the external JFS file already did) and not on-demand any
+     more.
+
+
+Version 1.6 (2005/04/03)
+- Removed resolving of '.' and '..' as part of directories in the users
+  profile due to problems with root and network directories. (Bug 977629)
+- Cleaned the vector of files with a write protection after using
+  AttributeAnalyzer plug-in (removed a bug appending the lists of
+  different analyses).
+- Support cancellation during synchronizing one file. (Bug 927867)
+- The last modified and read-only bit are only set when the file is no
+  directory. (Bug 977629)
+- The separator chars are updated when creating a new local file. (Bug 976755)
+- Updated and cleaned up the source code and the development directories:
+  (1) Reformatted code using Eclipse 3.0. (2) Updated license information.
+  (4) Restructured some directories: Moved Ant build file to main directory,
+  removed 'ant' and 'dev' directories.
+- In order to reduce the application's size the JGoodies library was removed
+  from the class path. By default the system look and feels are used for
+  each Java platform. You may specify a specific look and feel like JGoodies
+  Plastic XP (which was the default LaF before) as follows:
+    java -cp lib\jfs.jar;lib\looks-1.3.jar jfs.JFileSync -laf
+      com.jgoodies.looks.plastic.PlasticXPLookAndFeel
+- Improved robustness of plug-ins regarding directories that deliver
+  null as list of files instead of an empty list. (This is for instance
+  the case for some Windows system directories.)
+- Added basic capabilities for command line zipping and unzipping using
+  JFSZipFile. (However, no integration into JFS yet.)
+- The JFS server and client try to minimize the number of sockets involved
+  in transferring files, which reduces the synchronization time through an
+  JFS server significantly.
+- The JFS server may be started and stopped via the GUI. The configuration
+  object sends an update to the server in case of changed options.
+- Made buffer size for file operations and server timeout for socket
+  connections configurable via the command line and the options dialog. The
+  default buffer size was increased to 262144 bytes in order to increase
+  synchronization speed. (Thanks to Kevin Walmsley for the hint.) The timeout
+  for server and client is set to 5 seconds by default.
+- Redesigned parts of the configuration dialog for general JFS options and
+  server options.
+- The JFS GUI displays the transmitted number of bytes if a file is greater
+  than 500kb.
+- The JFS standard output and error messages are redirected to a log file if
+  the GUI is started. The new log view supports even updating viewing a log
+  file (which is useful in case of JFS server activities in the background).
+- Two more synchronization modes are supported: (1) The first mode forces a
+  copy from the source to the target side; that is, even newer files on target
+  side are replaced by corresponding older ones on client side. (2) The second
+  mode forces a copy from the target to the source side.
+- All supported synchronization modes and views are specified via the JFSMode
+  class and may be accessed via JFSSyncModes and JFSViewModes, respectively.
+  This eases specifying new synchronization modes and views.
+- If no file extension is specified, the default extension ".xml" is added.
+
+
+Version 1.5 (2004/01/20)
+
+- You may choose a Swing Look and Feel via the JFS command line option
+  '-laf'. See the command line help pages for usage information. The default
+  look and feel is 'PlasticXP' for Windows and Linux and the standard
+  'Metal' look and feel is used for all other operating systems. This should
+  provide a work-around for common font problems with the Plastic look and
+  feels under Mac OS X (and probably other operating systems).
+- Class JFileSync handles all Look and Feel-related issues at GUI startup.
+  The class JFSMainFrame is now completely Look and Feel-independent.
+- The package includes a simple file server to which a JFS client may
+  connect to. This allows for synchronizing with server directories
+  that are not available via Samba, NFS, etc., or are located behind a
+  firewall.
+- JFSFile is now an abstract class and specialized by a local file or
+  an external file, which may be accessed via a JFS server. JFS files
+  are produced by a file factory, which analyzes the directory pair
+  to handle and produces a local or an external file.
+- If you specify directory pairs via the command line, all pairs are correctly
+  registered at the user's profile. (This fixes a bug ignoring all directory
+  pairs specified via the command line.)
+- Fixed a problem with system directories that return no list of included
+  files (causing an application freeze).
+- Moved test profiles to testing directory structure and added tests for
+  client/server connections.
+- Made a template for testing directories and added ant task 'reset' for
+  resetting the testing directories to default state.
+- Changed the Windows batch file to show a command line window and start
+  JFS with java (instead of javaw) if any command line options are specified.
+- JFSComparison is created with strings for source and target directory
+  instead of JFSFile objects. The JFSFile objects for both directories
+  are created at the beginning of a comparison. (So, in case of external
+  files the server connection is established at comparison start and not at
+  application start.)
+- Updated the help pages for JFS configuration accordingly and added a new
+  page for configuring a JFS server.
+- JFSProgressView is centered before each comparison or synchronization to
+  take into account the current position and size of the main frame. (This
+  fixes a bug ignoring all position and size changes of the main frame
+  after first startup.)
+- Updated to JGoodies Looks Plastic 1.1.3 libraries.
+
+
+Version 1.4 (2003/12/11)
+
+- New release strategy: (1) one end-user release including only necessary
+  files for running JFileSync and a zip file of all sources, (2) one developer
+  release including the complete development folder and Eclipse configuration
+  files.
+- Split release notes to one Read-Me file containing basic information about
+  the application and installation instructions and one file containing
+  changes.
+- Before creating a log file the JFS settings directory is checked for
+  existence and created if necessary (fixes IOException at first JFS start).
+- Progress views during comparison and synchronization are now resizable.
+- The comparison table of the main view is updated after the synchronization
+  instead of cleaned. In case of failed copy or delete statements the reasons
+  could be identified and another synchronization run could be performed
+  without comparing all directory pairs again.
+- After pressing OK in the configuration view no general update is performed.
+  Only actual changes are passed to the configuration observers. That is, the
+  comparison table is not deleted after changing, e.g., the profile's title
+  or test run mode.
+- Removing a selected directory pair in the configuration view shifts the
+  selection accordingly (fixes ArrayOutOfBoundException).
+- Error messages are shown after failed opening or saving of user profiles.
+- Profile file location is remembered after opening the profile management
+  view and not cleaned by default.
+- Some improvements in the JFS documentation.
+
+
+Version 1.3 (2003/11/17)
+
+- New icon bar in JFS main frame to control the basic file manipulation
+  options as well as the comparison and synchronization functionality.
+  This bar replaces the button panel.
+- The default profile is stored after program termination to the user's home
+  directory and loaded if no configuration file was specified at the program
+  start (GUI only).
+- Window position and state as well as last visited directories for
+  loading/storing a profile and adding a new comparison pair are stored in a
+  settings file in the user's home directory and loaded at startup.
+- Message after successful synchronization.
+- The synchronization mode is shown in the GUI.
+- If test run is activated a corresponding message is shown after the
+  (simulated) synchronization.
+- An error log is provided in general and can be opened in case of failed
+  copy or delete statements.
+- If an synchronization source or target directory doesn't exist a
+  corresponding warning is shown in the profile creation/modification dialog
+  and an auto creation dialog is launched.
+- Introduced plug-in to control the date/time stamps of source and target
+  file hierarchies.
+- plug-in to analyze write protection attributes from all files on source
+  and/or target side.
+- New Java Swing look and feel.
+- New starting scripts for Windows and Unix.
+- Some improvements in managing default values via properties files.
+- Some interface clean-up.
+- Moved class JFSText to jfs.conf and removed package l10n. The language
+  resources are still available via the resources package.
+- Introduced interface for plug-ins and own plug-ins package:
+  a) conf: Configuration related classes and program constants.
+  b) gui: All Java Swing classes.
+  c) plugins: All JFS plug-in classes.
+  d) resources: Available translations, help and configuration files.
+  e) sync: All classes related with the synchronization algorithm.
+- New classes to store general program settings.
+- Applied singleton design pattern to configuration classes and changed
+  inheritance structure.
+- Added BSD license header to all Java files in order to reflect the new
+  program license.
+- Removed a bug in the profile's GUI. If the path of a directory was changed
+  via the table's JLabel directly the change was applied to the original
+  directory pair object instead of a clone. So pressing the cancel button
+  didn't undo the change.
+- Switched to Eclipse as main development platform.
+- Restructured and enhanced release notes.
+- Renamed directory for sample XML configuration files to 'profiles' and
+  updated testing XML profiles.
+
+
+Version 1.2 (2002/10/27)
+
+- Full command line access to all synchronization functionality.
+- JFileSync Shell for command line synchronization.
+- More detailed information during processing a comparison or synchronization.
+- Improved completion estimation of the comparison and
+  synchronization algorithm.
+- Individual selection and de-selection of all performed copy and delete
+  statements before synchronization.
+- Table with failed copy and delete statements after synchronization.
+- Simple help system with different basic JFS topics.
+- New configuration handling: creating a new, loading an existing, and saving
+  a configuration file is now possible by the GUI.
+- All options of a JFileSync configuration file can be controlled
+  by the GUI.
+- Introducing five Java packages for all JFileSync classes:
+  a) conf: Includes all configuration related classes and program constants.
+  b) gui: All Java Swing classes.
+  c) l10n: All localization related classes. So far JFS just supports
+     US English, but JFS can now easily be adapted to support other locales.
+  d) resources: All program's resources, like available translations and
+     help files.
+  e) sync: All classes related with the synchronization algorithm itself.
+- Configuration files now support a 'title' attribute.
+- Views and synchronization modes use a byte number to be represented in a
+  configuration file. That is, files before Version 1.2 produce an invalid
+  attribute number message while loading them for the first time with JFS 1.2.
+  So you have to check the previously specified view and synchronization mode.
+  The message disappears after saving the configuration file.
+- The sequence of handling copy and delete statements is switched. Now we
+  handle all delete statements first: This is important for DOS and Windows
+  Operating Systems. Let us assume a file on the source side named "TEST.txt"
+  and on the target side "test.txt" and we want to copy files from source and
+  delete from target. Because JFileSync works with a case-sensitive algorithm,
+  the file "TEST.txt" would be copied first and the file "test.txt" would be
+  deleted afterwards if we would perform the copy statements first. Because
+  DOS and Windows don't distinguish between both file names, there wouldn't
+  exist a file with one of names on the target side after the synchronization.
+- Switched to ant build file instead of platform-dependent scripts to compile
+  and distribute the system. The 'ant' directory replaces the 'bin' directory.
+- Translated release notes to English.
+
+
+Version 1.1 (2002/08/14)
+
+- New sample XML configuration files for Windows, Linux, and to perform
+  general program tests.
+- Ability to specify a test run in a user configuration file. In this case all
+  file system related actions are just simulated and not performed.
+- Added release notes (in German) to distribution file.
+
+
+Version 1.0 (2002/05/19)
+
+- Ability to specify file granularity in ms; that is, the minimum time
+  distance between two file time stamps so that both stamps are assumed to
+  be equal. This is necessary for synchronization with old FAT file systems.
+  The default value is 2000ms.
+- Introduced JFSFile as main file handling object, which encapsulates the
+  standard Java File object for efficiency reasons. Many attributes of a file
+  are used more than ones and the performance to retrieve them from the File
+  object is quite poor. These attributes are buffered in the JFSFile object.
+- Applied visitor patterns to file object and algorithm's progress.
+
+
+Version 0.9 (2002/05/10)
+
+- Some Java documentation enhancements.
+- Consistent headers for all Java files as well as author and
+  version information for every class.
+- Moved scripts to 'bin' directory and JFS jar file to 'lib'.
+
+
+Version 0.8 (2002/05/09)
+
+- Initial system release.
+- Basic comparison and synchronization functionality.
+- Java Swing frame to control the comparison's output and to initiate the
+  synchronization process.
+- XML-based configuration files to store directory pairs, view modes, and
+  synchronization modes.
+- Initial directory 'test' for testing source and target file trees.
+- Initial directory 'xml' for storing user configuration files.
+- Batch file-based compilation and distribution scripts.

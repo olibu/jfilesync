@@ -1,0 +1,29 @@
+Quality Assurance Plan for JFileSync Releases
+
+- Test basic functionality using the JFS graphical user interface:
+  - Run 'test/profiles/LocalSync.xml'.
+  - Run 'test/profiles/OneServerSync.xml' using the graphical JFS server.
+  - Run 'test/profiles/TwoServerSync.xml' using the graphical JFS server.
+
+- Test basic functionality using the JFS command line:
+  - Run automatic local synchronization using the following parameters:
+    '-config test/profiles/LocalSync.xml -nogui -quiet'
+  - Run server-based synchronization using the following parameters:
+    Server: '-config test/profiles/TwoServerSync.xml -server'
+    Client: '-config test/profiles/TwoServerSync.xml -nogui'
+
+- Run 'ant docs' in order to generate JavaDocs and to correct formatting bugs.
+
+- Update version number of JFS in 'ReadMe.txt', 'docs/Changes.txt', and
+  'src/jfs/resources/conf/JFSConfig.properties'
+
+- Update JFS home page and run 'ant web-preview' in order to test new pages.
+
+- Use a spell checker on:
+  - All changed files in 'src/jfs/resources'.
+  - 'src/jfs/resources/conf/JFSTranslation.properties'.
+  - All changed files in 'web'.
+  - All changed files in 'docs'.
+  - 'ReadMe.txt'
+
+- Tag new release files in CVS.

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jFileSync title="Test the Performance" testrun="true">
+  <directory src="c:\" tgt="c:\"/>
+</jFileSync>

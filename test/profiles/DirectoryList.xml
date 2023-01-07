@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jFileSync sync="13" testrun="true" title="Test Comparison">
+  <directory src="test/srcDirs0" tgt="test/tgtDirs0"/>
+  <directory src="test/srcDirs1" tgt="test/tgtDirs1"/>
+  <directory src="test/srcDirs2" tgt="test/tgtDirs2"/>
+  <directory src="test/srcDirs3" tgt="test/tgtDirs3"/>
+  <directory src="test/srcDirs4" tgt="test/tgtDirs4"/>
+  <directory src="test/srcDirs5" tgt="test/tgtDirs5"/>
+  <directory src="test/srcDirs6" tgt="test/tgtDirs6"/>
+  <directory src="test/srcDirs7" tgt="test/tgtDirs7"/>
+  <directory src="test/srcDirs8" tgt="test/tgtDirs8"/>
+  <directory src="test/srcDirs9" tgt="test/tgtDirs9"/>
+  <directory src="test/srcDirs10" tgt="test/tgtDirs10"/>
+  <directory src="test/srcDirs11" tgt="test/tgtDirs11"/>
+  <directory src="test/srcDirs12" tgt="test/tgtDirs12"/>
+  <directory src="test/srcDirs13" tgt="test/tgtDirs13"/>
+  <directory src="test/srcDirs14" tgt="test/tgtDirs14"/>
+  <directory src="test/srcDirs15" tgt="test/tgtDirs15"/>
+  <directory src="test/srcDirs16" tgt="test/tgtDirs16"/>
+  <directory src="test/srcDirs17" tgt="test/tgtDirs17"/>
+  <directory src="test/srcDirs18" tgt="test/tgtDirs18"/>
+  <directory src="test/srcDirs19" tgt="test/tgtDirs19"/>
+  <directory src="test/srcDirs20" tgt="test/tgtDirs20"/>
+  <directory src="test/srcDirs21" tgt="test/tgtDirs21"/>
+  <directory src="test/srcDirs22" tgt="test/tgtDirs22"/>
+  <directory src="test/srcDirs23" tgt="test/tgtDirs23"/>
+  <directory src="test/srcDirs24" tgt="test/tgtDirs24"/>
+  <directory src="test/srcDirs25" tgt="test/tgtDirs25"/>
+  <directory src="test/srcDirs26" tgt="test/tgtDirs26"/>
+  <directory src="test/srcDirs27" tgt="test/tgtDirs27"/>
+  <directory src="test/srcDirs28" tgt="test/tgtDirs28"/>
+  <directory src="test/srcDirs29" tgt="test/tgtDirs29"/>
+  <directory src="test/srcDirs30" tgt="test/tgtDirs30"/>
+  <directory src="test/srcDirs31" tgt="test/tgtDirs31"/>
+</jFileSync>

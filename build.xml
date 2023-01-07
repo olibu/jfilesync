@@ -1,0 +1,272 @@
+<project name="JFileSync" default="clean" basedir=".">
+
+	<description>
+		JFileSync
+		Copyright (C) 2002-2007, Jens Heidrich
+
+		This program is free software; you can redistribute it and/or modify
+		it under the terms of the GNU General Public License as published by
+		the Free Software Foundation; either version 2 of the License, or
+		(at your option) any later version.
+
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+		GNU General Public License for more details.
+
+		You should have received a copy of the GNU General Public License
+		along with this program; if not, write to the Free Software
+		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301,
+		USA
+	</description>
+
+
+	<property name="ant" location="ant" />
+	<property name="src" location="src" />
+	<property name="build" location="classes" />
+	<property name="dist" location="lib" />
+	<property name="api" location="docs/api" />
+	<property name="test" location="test" />
+	<property name="web" location="web" />
+	<property name="web-preview" location="web-preview" />
+	<property name="release.dir" value="jfilesync" />
+	<property name="config" location="src/jfs/resources/conf/JFSConfig.properties" />
+	<property name="src.license.template" value="docs/License-JFileSync-Sources.txt" />
+
+
+	<target name="init">
+		<description>Creates the time stamp and version number</description>
+		<loadproperties srcFile="${config}">
+			<filterchain>
+				<linecontains>
+					<contains value="jfs.version" />
+				</linecontains>
+			</filterchain>
+		</loadproperties>
+		<property name="version" value="${jfs.version}" />
+		<tstamp>
+			<format property="SNAPSHOT" pattern="yyyy-MM-dd" />
+		</tstamp>
+	</target>
+
+
+	<target name="replace">
+		<copy toDir="replaced">
+			<fileset dir="${src}">
+				<include name="**" />
+			</fileset>
+			<filterset begintoken='"' endtoken='"' recurse="false">
+				<filtersfile file="replace.properties" />
+			</filterset>
+			<filterset begintoken='@' endtoken='@' recurse="false">
+				<filtersfile file="replace2.properties" />
+			</filterset>
+		</copy>
+	</target>
+
+
+	<target name="compile" depends="init">
+		<description>Compiles the sources</description>
+		<mkdir dir="${build}" />
+		<javac srcdir="${src}" destdir="${build}" target="1.5">
+			<include name="jfs/**" />
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+	</target>
+
+
+	<target name="dist" depends="compile">
+		<description>Generates the distribution</description>
+
+		<delete file="${dist}/jfs.jar" />
+		<mkdir dir="${dist}" />
+
+		<jar destfile="${dist}/jfs.jar">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="jfs.JFileSync" />
+			</manifest>
+			<fileset dir="${build}" />
+			<fileset dir="${src}" includes="jfs/resources/**" />
+		</jar>
+	</target>
+
+
+	<target name="test-server">
+		<description>Tests the JFS server</description>
+		<java classname="jfs.server.JFSServer">
+			<sysproperty key="user.home" path="." />
+			<sysproperty key="user.language" value="en" />
+			<sysproperty key="user.region" path="US" />
+			<classpath>
+				<pathelement location="${dist}/jfs.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+		</java>
+	</target>
+
+
+	<target name="test">
+		<description>Tests the JFS application</description>
+		<input message="Enter parameters:" addproperty="parameters" />
+		<java jar="${dist}/jfs.jar" fork="true">
+			<sysproperty key="user.home" path="." />
+			<sysproperty key="user.language" value="en" />
+			<sysproperty key="user.region" path="US" />
+			<arg line="${parameters}" />
+		</java>
+	</target>
+
+
+	<target name="test-native">
+		<description>Tests the native language JFS application</description>
+		<input message="Enter language (e.g. en):" addproperty="language" />
+		<input message="Enter region (e.g. US):" addproperty="region" />
+		<input message="Enter parameters:" addproperty="parameters" />
+		<java jar="${dist}/jfs.jar" fork="true">
+			<sysproperty key="user.home" path="." />
+			<sysproperty key="user.language" value="${language}" />
+			<sysproperty key="user.region" path="${region}" />
+			<arg line="${parameters}" />
+		</java>
+	</target>
+
+
+	<target name="docs">
+		<description>Generates JavaDoc documentation</description>
+		<mkdir dir="${api}" />
+		<javadoc packagenames="jfs.*" destdir="${api}" Private="Yes">
+			<sourcepath path="${src}" />
+		</javadoc>
+	</target>
+
+
+	<target name="clean" depends="dist">
+		<description>Cleans up</description>
+		<delete dir="${build}" />
+	</target>
+
+
+	<target name="clean-all">
+		<description>Cleans up all generated files</description>
+		<delete dir="${build}" />
+		<delete dir="${api}" />
+		<delete file="${dist}/jfs.jar" />
+		<delete dir=".jfs" />
+	</target>
+
+
+	<target name="reset">
+		<description>Sets the test directories back to default</description>
+		<delete dir="${test}/dirs" />
+		<unzip src="${test}/templates/dirs.zip" dest="${test}" />
+	</target>
+
+
+	<target name="srczip" depends="init">
+		<description>Generates a zip file of all sources</description>
+		<zip destfile="jfilesync-src.zip" basedir="${src}" />
+	</target>
+
+
+	<target name="release" depends="srczip">
+		<description>Generates an end user release</description>
+
+		<zip destfile="../jfilesync${version}.zip">
+			<zipfileset dir="." prefix="${release.dir}">
+				<include name="lib/**" />
+				<include name="docs/**" />
+				<include name="profiles/**" />
+				<include name="ReadMe.txt" />
+				<include name="JFileSync.bat" />
+				<include name="JFileSync.sh" />
+				<include name="JFileSync.ico" />
+				<include name="jfilesync-src.zip" />
+			</zipfileset>
+		</zip>
+
+		<delete file="jfilesync-src.zip" />
+	</target>
+
+
+	<target name="snapshot" depends="srczip" description="">
+		<description>Generates a snapshot release</description>
+
+		<echo file="Snapshot.txt" message="${SNAPSHOT}" />
+
+		<zip destfile="../jfilesync${SNAPSHOT}.zip">
+			<zipfileset dir="." prefix="${release.dir}">
+				<include name="lib/**" />
+				<include name="docs/**" />
+				<include name="profiles/**" />
+				<include name="ReadMe.txt" />
+				<include name="Snapshot.txt" />
+				<include name="JFileSync.bat" />
+				<include name="JFileSync.sh" />
+				<include name="JFileSync.ico" />
+				<include name="jfilesync-src.zip" />
+			</zipfileset>
+		</zip>
+
+		<delete file="jfilesync-src.zip" />
+		<delete file="Snapshot.txt" />
+	</target>
+
+
+	<target name="dev" depends="init">
+		<description>Generates a developer release</description>
+		<zip destfile="../jfilesync${version}-dev.zip">
+			<zipfileset dir="." prefix="${release.dir}" defaultexcludes="no">
+				<exclude name="**/CVS/**" />
+				<exclude name="web/**" />
+			</zipfileset>
+		</zip>
+	</target>
+
+
+	<target name="src-license">
+		<description>Updates all source licenses</description>
+		<loadfile property="license" srcFile="${src.license.template}" />
+		<replaceregexp replace="${license}" flags="gm">
+			<regexp pattern="(\A/\*.*)(\s \*.*)*" />
+			<fileset dir="${src}" includes="**/*.java" />
+		</replaceregexp>
+	</target>
+
+
+	<target name="web-preview">
+		<description>Generates a preview of the JFS web pages</description>
+		<mkdir dir="${web-preview}" />
+
+		<loadfile property="footer" srcFile="${web}/inc/footer.inc" />
+		<loadfile property="head" srcFile="${web}/inc/head.inc" />
+		<loadfile property="header" srcFile="${web}/inc/header.inc" />
+		<loadfile property="menu" srcFile="${web}/inc/menu.inc" />
+
+		<copy todir="${web-preview}">
+			<fileset dir="${web}" />
+		</copy>
+
+		<replace dir="${web-preview}" value="${footer}" includes="**/*.shtml">
+			<replacetoken>&lt;!--#include virtual="inc/footer.inc" --&gt;</replacetoken>
+		</replace>
+		<replace dir="${web-preview}" value="${head}" includes="**/*.shtml">
+			<replacetoken>&lt;!--#include virtual="inc/head.inc" --&gt;</replacetoken>
+		</replace>
+		<replace dir="${web-preview}" value="${header}" includes="**/*.shtml">
+			<replacetoken>&lt;!--#include virtual="inc/header.inc" --&gt;</replacetoken>
+		</replace>
+		<replace dir="${web-preview}" value="${menu}" includes="**/*.shtml">
+			<replacetoken>&lt;!--#include virtual="inc/menu.inc" --&gt;</replacetoken>
+		</replace>
+
+	</target>
+
+
+	<target name="clean-web">
+		<description>Cleans up the web preview</description>
+		<delete dir="${web-preview}" />
+	</target>
+
+
+</project>

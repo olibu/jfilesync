@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jFileSync title="Synchronization with a JFS Server" sync="13" view="20">
+  <directory src="My Source" tgt="ext://localhost/My Target"/>
+</jFileSync>
