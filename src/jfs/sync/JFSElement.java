@@ -31,7 +31,7 @@ import jfs.conf.JFSSyncMode.SyncAction;
  * and target side within the directory structures that have to be compared.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSElement.java,v 1.22 2007/03/29 14:11:35 heidrich Exp $
+ * @version $Id: JFSElement.java,v 1.23 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSElement implements Comparable<JFSElement> {
 
@@ -361,7 +361,30 @@ public class JFSElement implements Comparable<JFSElement> {
 	 * @see Comparable#compareTo(Object)
 	 */
 	public int compareTo(JFSElement e) {
+		//FIXME: returns true on files that have the same filename but are in a different root element 
 		return getRelativePath().compareTo(e.getRelativePath());
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object arg0) {
+		if (arg0 != null) {
+			if (arg0 instanceof JFSElement)
+				return compareTo((JFSElement)arg0)==0;
+			else
+				return super.equals(arg0);
+		} else
+			return false;
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return getRelativePath().hashCode();
 	}
 
 	/**

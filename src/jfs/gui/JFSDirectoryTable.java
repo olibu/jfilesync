@@ -37,13 +37,14 @@ import javax.swing.table.TableModel;
 import jfs.conf.JFSConfig;
 import jfs.conf.JFSConst;
 import jfs.conf.JFSText;
+import jfs.sync.JFSFileProducerManager;
 
 /**
  * This class is responsible for displaying the directory pairs of a
  * configuration object.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSDirectoryTable.java,v 1.15 2007/06/06 19:51:33 heidrich Exp $
+ * @version $Id: JFSDirectoryTable.java,v 1.16 2008/06/11 14:40:12 heidrich Exp $
  */
 public class JFSDirectoryTable extends AbstractTableModel implements
 		TableCellRenderer {
@@ -166,7 +167,7 @@ public class JFSDirectoryTable extends AbstractTableModel implements
 			boolean isSelected, boolean hasFocus, int row, int column) {
 		JFSText t = JFSText.getInstance();
 
-		// Adapt cell label individualy:
+		// Adapt cell label individually:
 		String path = (String) value;
 		File file = new File(path);
 		cell.setText(path);
@@ -180,7 +181,10 @@ public class JFSDirectoryTable extends AbstractTableModel implements
 			cell.setBackground(table.getBackground());
 		}
 
-		if (path.startsWith(JFSConst.SCHEME_EXTERNAL)) {
+		JFSFileProducerManager producerManager = JFSFileProducerManager
+				.getInstance();
+
+		if (!producerManager.getScheme(path).equals(JFSConst.SCHEME_LOCAL)) {
 			if (isSelected)
 				cell.setForeground(EXTERNAL_SELECTED);
 			else

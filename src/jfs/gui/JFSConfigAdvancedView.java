@@ -60,14 +60,17 @@ public class JFSConfigAdvancedView extends JDialog implements ActionListener {
 	/** The keep user actions check box. */
 	private JCheckBox keepUserActions;
 
-	/** The history checkbox. */
+	/** The history check box. */
 	private JCheckBox history;
 
-	/** The set can write checkbox. */
+	/** The set can write check box. */
 	private JCheckBox setCanWrite;
 
+	/** The set executable check box */
+	private JCheckBox setExecutable;
+
 	/**
-	 * Initializes the config view.
+	 * Initializes the configuration view.
 	 * 
 	 * @param dialog
 	 *            The main frame.
@@ -107,7 +110,10 @@ public class JFSConfigAdvancedView extends JDialog implements ActionListener {
 				.isStoreHistory());
 
 		setCanWrite = new JCheckBox(t.get("profile.setCanWrite"), config
-				.isStoreHistory());
+				.isSetCanWrite());
+
+		setExecutable = new JCheckBox(t.get("profile.setExecutable"), config
+				.isSetExecutable());
 
 		JPanel row1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		row1Panel.add(granularityLabel);
@@ -126,7 +132,10 @@ public class JFSConfigAdvancedView extends JDialog implements ActionListener {
 		JPanel row5Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		row5Panel.add(setCanWrite);
 
-		JPanel optionsPanel = new JPanel(new GridLayout(5, 1));
+		JPanel row6Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		row6Panel.add(setExecutable);
+
+		JPanel optionsPanel = new JPanel(new GridLayout(6, 1));
 		optionsPanel
 				.setBorder(new TitledBorder(t.get("profile.option.heading")));
 		optionsPanel.add(row1Panel);
@@ -134,6 +143,7 @@ public class JFSConfigAdvancedView extends JDialog implements ActionListener {
 		optionsPanel.add(row3Panel);
 		optionsPanel.add(row4Panel);
 		optionsPanel.add(row5Panel);
+		optionsPanel.add(row6Panel);
 
 		// Create buttons in a separate panel:
 		JPanel buttonPanel = new JPanel();
@@ -168,6 +178,7 @@ public class JFSConfigAdvancedView extends JDialog implements ActionListener {
 			config.setKeepUserActions(keepUserActions.isSelected());
 			config.setStoreHistory(history.isSelected());
 			config.setCanWrite(setCanWrite.isSelected());
+			config.setExecutable(setExecutable.isSelected());
 		}
 	}
 }

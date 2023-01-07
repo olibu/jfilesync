@@ -38,7 +38,7 @@ import jfs.sync.JFSQuestion.QuestionAnswer;
  * an action for a JFS element.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSQuestionPrint.java,v 1.6 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSQuestionPrint.java,v 1.7 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSQuestionPrint implements JFSQuestionOracle {
 
@@ -65,21 +65,24 @@ public class JFSQuestionPrint implements JFSQuestionOracle {
 		BufferedReader din = new BufferedReader(
 				new InputStreamReader(System.in));
 		try {
-			String input = din.readLine().toLowerCase();
-			if (input.equals("1")) {
-				p.println("  " + t.get("syncQuestion.print.action.copySrc"));
-				p.println();
-				question.setAction(SyncAction.COPY_SRC);
-				return QuestionAnswer.DO;
-			} else if (input.equals("2")) {
-				p.println("  " + t.get("syncQuestion.print.action.copyTgt"));
-				p.println();
-				question.setAction(SyncAction.COPY_TGT);
-				return QuestionAnswer.DO;
-			} else if (input.equals("4")) {
-				p.println("  " + t.get("syncQuestion.print.action.skipAll"));
-				p.println();
-				return QuestionAnswer.SKIP_ALL;
+			String input = din.readLine();
+			if (input != null) {
+				input = input.toLowerCase();
+				if (input.equals("1")) {
+					p.println("  " + t.get("syncQuestion.print.action.copySrc"));
+					p.println();
+					question.setAction(SyncAction.COPY_SRC);
+					return QuestionAnswer.DO;
+				} else if (input.equals("2")) {
+					p.println("  " + t.get("syncQuestion.print.action.copyTgt"));
+					p.println();
+					question.setAction(SyncAction.COPY_TGT);
+					return QuestionAnswer.DO;
+				} else if (input.equals("4")) {
+					p.println("  " + t.get("syncQuestion.print.action.skipAll"));
+					p.println();
+					return QuestionAnswer.SKIP_ALL;
+				}
 			}
 		} catch (IOException exeption) {
 			JFSLog.getErr().getStream().println(t.get("error.inputRead"));

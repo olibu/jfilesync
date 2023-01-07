@@ -21,6 +21,7 @@ package jfs.server;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +42,7 @@ import jfs.conf.JFSText;
  * This class launches and stops the JFS server.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSServer.java,v 1.23 2007/07/20 12:27:52 heidrich Exp $
+ * @version $Id: JFSServer.java,v 1.25 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSServer extends Thread {
 
@@ -121,14 +122,17 @@ public class JFSServer extends Thread {
 				socket.setSoTimeout(JFSConfig.getInstance().getServerTimeout());
 				out.println(t.get("cmd.server.clientSocket") + " ["
 						+ socket.getLocalSocketAddress() + "]");
+				out.println(t.get("cmd.server.timeout") + " ["
+						+ socket.getSoTimeout() + "]");
 				JFSClient handler = new JFSClient(this, socket);
 				handler.start();
 			}
 
 			serverSocket.close();
 		} catch (SocketException e) {
-			// Ignore socket exceptions...
-		} catch (Exception e) {
+			JFSLog.getErr().getStream()
+					.println(t.get("error.socket") + " " + e);
+		} catch (IOException e) {
 			JFSLog.getErr().getStream().println(
 					t.get("error.external") + " " + e);
 		}
@@ -240,7 +244,9 @@ public class JFSServer extends Thread {
 				FileOutputStream fileOut = new FileOutputStream(file);
 				success = transferContent(is, fileOut, info.getLength());
 				fileOut.close();
-			} catch (Exception e) {
+			} catch (FileNotFoundException e) {
+				success = false;
+			} catch (IOException e) {
 				success = false;
 			}
 			out.println("Getting Contents: " + success);
@@ -258,7 +264,9 @@ public class JFSServer extends Thread {
 				OutputStream os = access.putContents(info);
 				success = transferContent(fileIn, os, info.getLength());
 				fileIn.close();
-			} catch (Exception e) {
+			} catch (FileNotFoundException e) {
+				success = false;
+			} catch (IOException e) {
 				success = false;
 			}
 			out.println("Putting Contents: " + success);

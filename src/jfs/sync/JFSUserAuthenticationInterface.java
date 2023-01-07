@@ -20,40 +20,28 @@
 package jfs.sync;
 
 /**
- * This class produces and destroys factories for JFS files.
+ * An interface for asking the user to enter username and password.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFileProducerFactory.java,v 1.1 2005/05/06 11:06:57 heidrich
- *          Exp $
+ * @version $Id: JFSUserAuthenticationInterface.java,v 1.1 2008/06/11 12:10:59 heidrich Exp $
  */
-public abstract class JFSFileProducerFactory {
-	/**
-	 * Resets all producers of the factory.
-	 */
-	public abstract void resetProducers();
+public interface JFSUserAuthenticationInterface {
 
 	/**
-	 * Returns a new producer for a special URI.
+	 * This method is called every time user interaction is needed.
 	 * 
-	 * @param uri
-	 *            The URI to create the producer for.
-	 * @return The created producer.
+	 * @param question
+	 *            The question to ask.
 	 */
-	public abstract JFSFileProducer createProducer(String uri);
+	public void ask(JFSUserAuthentication auth);
 
 	/**
-	 * Shuts down an existing producer for a special URI.
-	 * 
-	 * @param uri
-	 *            The URI to destroy the producer for.
+	 * @return Returns the user name.
 	 */
-	public abstract void shutDownProducer(String uri);
+	public String getUserName();
 
 	/**
-	 * Cancels an existing producer for a special URI.
-	 * 
-	 * @param uri
-	 *            The URI to destroy the producer for.
+	 * @return Returns the password.
 	 */
-	public abstract void cancelProducer(String uri);
+	public String getPassword();
 }

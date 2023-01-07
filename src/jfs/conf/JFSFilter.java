@@ -30,7 +30,7 @@ import jfs.sync.JFSFile;
  * be added to the synchronization list.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFilter.java,v 1.8 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSFilter.java,v 1.9 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSFilter implements Cloneable {
 
@@ -215,12 +215,13 @@ public class JFSFilter implements Cloneable {
 	/**
 	 * @see Object#clone()
 	 */
-	public JFSFilter clone() {
-		JFSFilter clone = new JFSFilter(filter);
+	public JFSFilter clone() throws CloneNotSupportedException {
+		return (JFSFilter)super.clone(); //all fields are primitives or non-mutable
+		/*JFSFilter clone = new JFSFilter(filter);
 		clone.setActive(isActive);
 		clone.setType(type);
 		clone.setRange(range);
-		return clone;
+		return clone;*/
 	}
 
 	/**
@@ -234,5 +235,19 @@ public class JFSFilter implements Cloneable {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((filter == null) ? 0 : filter.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + ((range == null) ? 0 : range.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
 	}
 }

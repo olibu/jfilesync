@@ -20,6 +20,7 @@
 package jfs.conf;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Vector;
@@ -33,7 +34,7 @@ import jfs.sync.JFSElement.ElementState;
  * Manager all histories of synchronized directory pairs.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSHistoryManager.java,v 1.8 2007/07/20 15:59:30 heidrich Exp $
+ * @version $Id: JFSHistoryManager.java,v 1.9 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSHistoryManager {
 	/** Stores the only instance of the class. */
@@ -112,7 +113,10 @@ public class JFSHistoryManager {
 	 *            The history to delete.
 	 */
 	public final void deleteHistory(JFSHistory history) {
-		deleteHistoryFile(history);
+		try {
+			deleteHistoryFile(history);
+		} catch (IOException e) {
+		}
 		history.clear();
 		histories.remove(history);
 	}
@@ -124,7 +128,11 @@ public class JFSHistoryManager {
 	 */
 	public final void deleteAll() {
 		for (JFSHistory h : histories) {
-			deleteHistoryFile(h);
+			try {
+				deleteHistoryFile(h);
+			} catch (IOException e) {
+				continue;
+			}
 			h.clear();
 		}
 		histories.clear();
@@ -135,19 +143,23 @@ public class JFSHistoryManager {
 	 * 
 	 * @param history
 	 *            The history to delete the corresponding file for.
+	 * @throws IOException 
 	 */
-	private final void deleteHistoryFile(JFSHistory history) {
+	private final void deleteHistoryFile(JFSHistory history) throws IOException {
 		File file = new File(JFSConst.HOME_DIR + File.separatorChar
 				+ history.getFileName());
-		if (file != null && file.exists())
-			file.delete();
+		if (file != null && file.exists()) {
+			if (!file.delete())
+				throw new IOException("Unable to delete file: " + file.getAbsolutePath());
+		}
 	}
 
 	/**
 	 * Cleans the JFS configuration directory by cleaning all history files that
 	 * are not referenced in the history manager.
+	 * @throws IOException 
 	 */
-	public final void cleanHistories() {
+	public final void cleanHistories() throws IOException {
 		Vector<String> historyFiles = new Vector<String>();
 		for (JFSHistory h : getHistories()) {
 			historyFiles.add(h.getFileName());
@@ -158,7 +170,8 @@ public class JFSHistoryManager {
 			String name = f.getName();
 			if (name.startsWith(JFSConst.HISTORY_FILE_PREFIX)
 					&& name.endsWith(".xml") && !historyFiles.contains(name)) {
-				f.delete();
+				if (!f.delete())
+					throw new IOException("Unable to delete file: " + f.getAbsolutePath());
 			}
 		}
 	}

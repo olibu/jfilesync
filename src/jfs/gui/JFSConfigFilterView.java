@@ -23,20 +23,17 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -45,8 +42,6 @@ import javax.swing.event.ListSelectionListener;
 import jfs.conf.JFSConfig;
 import jfs.conf.JFSFilter;
 import jfs.conf.JFSText;
-import jfs.conf.JFSFilter.FilterRange;
-import jfs.conf.JFSFilter.FilterType;
 
 /**
  * This dialog manages filter settings.
@@ -117,8 +112,13 @@ public class JFSConfigFilterView extends JDialog implements ActionListener,
 
 		// Create table:
 		Vector<JFSFilter> filtersClone = new Vector<JFSFilter>();
-		for (JFSFilter f : filters)
-			filtersClone.add(f.clone());
+		for (JFSFilter f : filters) {
+			try {
+				filtersClone.add(f.clone());
+			} catch (CloneNotSupportedException e) {
+				continue;
+			}
+		}
 		filterTable = new JFSFilterTable(filtersClone);
 		filterTable.getJTable().getSelectionModel().setSelectionMode(
 				ListSelectionModel.SINGLE_SELECTION);
@@ -179,7 +179,6 @@ public class JFSConfigFilterView extends JDialog implements ActionListener,
 	 * @see ActionListener#actionPerformed(ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent event) {
-		JFSText t = JFSText.getInstance();
 		String cmd = event.getActionCommand();
 
 		if (cmd.equals("button.up")) {
@@ -220,54 +219,18 @@ public class JFSConfigFilterView extends JDialog implements ActionListener,
 
 		if (cmd.equals("button.add")) {
 			// Create dialog:
-			JPanel row1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			JPanel row2Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			JPanel row3Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-			JTextField filterText = new JTextField();
-			filterText.setColumns(20);
-			row1Panel.add(new JLabel(t.get("profile.filter.add.regexp")));
-			row1Panel.add(filterText);
-
-			JComboBox typeCombo = new JComboBox();
-			for (FilterType fType : FilterType.values()) {
-				typeCombo.addItem(t.get(fType.getName()));
-			}
-			row2Panel.add(new JLabel(t.get("profile.filter.add.type")));
-			row2Panel.add(typeCombo);
-
-			JComboBox rangeCombo = new JComboBox();
-			for (FilterRange fRange : FilterRange.values()) {
-				rangeCombo.addItem(t.get(fRange.getName()));
-			}
-			row3Panel.add(new JLabel(t.get("profile.filter.add.range")));
-			row3Panel.add(rangeCombo);
-
-			JPanel panel = new JPanel(new GridLayout(3, 1));
-			panel.add(row1Panel);
-			panel.add(row2Panel);
-			panel.add(row3Panel);
-
-			int result = JOptionPane.showConfirmDialog(this, panel, t
-					.get("profile.filter.add.title"),
+			JFSConfigFilterAddDialog panel = new JFSConfigFilterAddDialog(); 
+			
+			int result = JOptionPane.showConfirmDialog(this, panel,
+					JFSText.getInstance().get("profile.filter.add.title"),
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.INFORMATION_MESSAGE);
 
 			// If not canceled, add filter:
 			if (result == JOptionPane.OK_OPTION) {
-				JFSFilter f = new JFSFilter(filterText.getText());
-				for (FilterType fType : FilterType.values()) {
-					if (typeCombo.getSelectedItem().equals(
-							t.get(fType.getName()))) {
-						f.setType(fType);
-					}
-				}
-				for (FilterRange fRange : FilterRange.values()) {
-					if (rangeCombo.getSelectedItem().equals(
-							t.get(fRange.getName()))) {
-						f.setRange(fRange);
-					}
-				}
+				JFSFilter f = new JFSFilter(panel.getFilterText());
+				f.setType(panel.getFilterType());
+				f.setRange(panel.getFilterRange());
 
 				filterTable.getFilters().add(f);
 				update();

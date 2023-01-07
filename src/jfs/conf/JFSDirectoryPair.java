@@ -25,7 +25,7 @@ import java.io.File;
  * Represents two directories that have to be compared against each other.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSDirectoryPair.java,v 1.11 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSDirectoryPair.java,v 1.12 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSDirectoryPair implements Cloneable {
 
@@ -109,15 +109,16 @@ public class JFSDirectoryPair implements Cloneable {
 	/**
 	 * @see Object#clone()
 	 */
-	public JFSDirectoryPair clone() {
-		return new JFSDirectoryPair(srcDir, tgtDir);
+	public JFSDirectoryPair clone() throws CloneNotSupportedException {
+		JFSDirectoryPair clone = (JFSDirectoryPair)super.clone(); //all fields are primitives or non-mutable
+		return clone;
 	}
-
+	
 	/**
 	 * @see Object#equals(Object)
 	 */
 	public boolean equals(Object object) {
-		if (object.getClass() != getClass()) {
+		if (object == null || object.getClass() != getClass()) {
 			return false;
 		} else {
 			JFSDirectoryPair pair = (JFSDirectoryPair) object;
@@ -125,5 +126,17 @@ public class JFSDirectoryPair implements Cloneable {
 			return getSrc().equals(pair.getSrc())
 					&& getTgt().equals(pair.getTgt());
 		}
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((srcDir == null) ? 0 : srcDir.hashCode());
+		result = prime * result + ((tgtDir == null) ? 0 : tgtDir.hashCode());
+		return result;
 	}
 }

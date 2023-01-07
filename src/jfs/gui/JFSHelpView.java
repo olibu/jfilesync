@@ -25,6 +25,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -53,7 +54,7 @@ import jfs.conf.JFSText;
  * content.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSHelpView.java,v 1.17 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSHelpView.java,v 1.19 2013/06/19 09:36:27 heidrich Exp $
  */
 public class JFSHelpView extends JDialog implements ActionListener,
 		HyperlinkListener, ListSelectionListener {
@@ -61,7 +62,7 @@ public class JFSHelpView extends JDialog implements ActionListener,
 	private static final long serialVersionUID = 52L;
 
 	/** The available help topics. */
-	private JList topicsList;
+	private JList<JFSHelpTopic> topicsList;
 
 	/** The available help topics. */
 	private TreeSet<JFSHelpTopic> topics = new TreeSet<JFSHelpTopic>();
@@ -125,7 +126,8 @@ public class JFSHelpView extends JDialog implements ActionListener,
 				"jfs.help.topics");
 		for (int i = 0; i < helpTopics.length; i++)
 			topics.add(new JFSHelpTopic(helpTopics[i]));
-		topicsList = new JList(topics.toArray());
+		JFSHelpTopic[] topicsArray = new JFSHelpTopic[0];
+		topicsList = new JList<JFSHelpTopic>(topics.toArray(topicsArray));
 		topicsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		topicsList.addListSelectionListener(this);
 		topicPanel.add(new JScrollPane(topicsList));
@@ -170,8 +172,12 @@ public class JFSHelpView extends JDialog implements ActionListener,
 			topicsList.removeListSelectionListener(this);
 			topicsList.clearSelection();
 			for (JFSHelpTopic top : topics) {
-				if (top.getUrl().equals(url))
-					topicsList.setSelectedValue(top, true);
+				try {
+					if (top.getUrl().toURI().equals(url.toURI()))
+						topicsList.setSelectedValue(top, true);
+				} catch (URISyntaxException e) {
+					continue;
+				}
 			}
 			topicsList.addListSelectionListener(this);
 		} catch (IOException e) {
@@ -191,8 +197,13 @@ public class JFSHelpView extends JDialog implements ActionListener,
 	 */
 	private final static void addUrl(Vector<URL> v, URL url) {
 		// If URL is already first stop:
-		if (v.size() > 0 && v.lastElement().equals(url))
+		try {
+			//performance: compare by URI, not URL. URL might do DNS lookups.
+			if (v.size() > 0 && v.lastElement().toURI().equals(url.toURI()))
+				return;
+		} catch (URISyntaxException e) {
 			return;
+		}
 
 		// Add new URL and cut vector:
 		v.add(url);
@@ -214,9 +225,12 @@ public class JFSHelpView extends JDialog implements ActionListener,
 	private final void update(Vector<URL> v, URL newUrl) {
 		// Update contents:
 		URL oldUrl = content.getPage();
-		if (!oldUrl.equals(newUrl)) {
-			addUrl(v, content.getPage());
-			setContent(newUrl);
+		try {
+			if (!oldUrl.toURI().equals(newUrl.toURI())) {
+				addUrl(v, content.getPage());
+				setContent(newUrl);
+			}
+		} catch (URISyntaxException e) {
 		}
 
 		// Update button state:
@@ -240,9 +254,13 @@ public class JFSHelpView extends JDialog implements ActionListener,
 	 */
 	private final void setNewUrl(URL newUrl) {
 		URL oldUrl = content.getPage();
-		if (!oldUrl.equals(newUrl)) {
-			fwdHistory.clear();
-			update(bwdHistory, newUrl);
+		try {
+			if (!oldUrl.toURI().equals(newUrl.toURI())) {
+				fwdHistory.clear();
+				update(bwdHistory, newUrl);
+			}
+		} catch (URISyntaxException e) {
+			return;
 		}
 	}
 

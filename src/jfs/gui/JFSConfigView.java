@@ -53,13 +53,14 @@ import jfs.conf.JFSDirectoryPair;
 import jfs.conf.JFSSyncMode;
 import jfs.conf.JFSSyncModes;
 import jfs.conf.JFSText;
+import jfs.sync.JFSFileProducerManager;
 
 /**
  * This dialog is responsible for changing options within the configuration
  * object (aka user's profile) currently used.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSConfigView.java,v 1.26 2007/06/06 19:51:33 heidrich Exp $
+ * @version $Id: JFSConfigView.java,v 1.28 2013/06/19 09:36:27 heidrich Exp $
  */
 public class JFSConfigView extends JDialog implements ActionListener,
 		ListSelectionListener {
@@ -73,7 +74,7 @@ public class JFSConfigView extends JDialog implements ActionListener,
 	private JTextField title;
 
 	/** The synchronization mode box. */
-	private JComboBox syncMode;
+	private JComboBox<String> syncMode;
 
 	/** The synchronization modes. */
 	private Vector<JFSSyncMode> syncModeList;
@@ -185,7 +186,7 @@ public class JFSConfigView extends JDialog implements ActionListener,
 		// Set-up modes:
 		JLabel syncModeLabel = new JLabel(t.get("profile.syncMode"));
 		JFSSyncModes modes = JFSSyncModes.getInstance();
-		syncMode = new JComboBox();
+		syncMode = new JComboBox<String>();
 		syncModeList = new Vector<JFSSyncMode>(modes.getModes());
 		for (JFSSyncMode mode : syncModeList) {
 			syncMode.addItem(t.get(mode.getAlias()));
@@ -365,30 +366,36 @@ public class JFSConfigView extends JDialog implements ActionListener,
 	 */
 	public static void createDirectoryDialog(Component component, String dir) {
 		// Test for existence:
-		File file = new File(dir);
+		JFSFileProducerManager producerManager = JFSFileProducerManager
+				.getInstance();
 
-		if (!file.exists() && !dir.startsWith(JFSConst.SCHEME_EXTERNAL)) {
-			// Create dialog:
-			JFSText t = JFSText.getInstance();
-			JPanel panel = new JPanel(new GridLayout(3, 1));
-			JLabel msg = new JLabel(t.get("profile.dir.create.message"));
-			JLabel question = new JLabel(t.get("profile.dir.create.question"));
-			JTextField directory = new JTextField(dir);
-			panel.add(msg);
-			panel.add(question);
-			panel.add(directory);
+		if (producerManager.getScheme(dir).equals(JFSConst.SCHEME_LOCAL)) {
+			File file = new File(dir);
+			if (!file.exists()) {
+				// Create dialog:
+				JFSText t = JFSText.getInstance();
+				JPanel panel = new JPanel(new GridLayout(3, 1));
+				JLabel msg = new JLabel(t.get("profile.dir.create.message"));
+				JLabel question = new JLabel(t
+						.get("profile.dir.create.question"));
+				JTextField directory = new JTextField(dir);
+				panel.add(msg);
+				panel.add(question);
+				panel.add(directory);
 
-			int result = JOptionPane.showConfirmDialog(component, panel, t
-					.get("profile.dir.create.title"),
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+				int result = JOptionPane.showConfirmDialog(component, panel, t
+						.get("profile.dir.create.title"),
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.WARNING_MESSAGE);
 
-			if (result == JOptionPane.OK_OPTION) {
-				if (!file.mkdirs()) {
-					JLabel failed = new JLabel(t
-							.get("profile.dir.message.failed"));
-					JOptionPane.showMessageDialog(component, failed, t
-							.get("profile.dir.create.title"),
-							JOptionPane.WARNING_MESSAGE);
+				if (result == JOptionPane.OK_OPTION) {
+					if (!file.mkdirs()) {
+						JLabel failed = new JLabel(t
+								.get("profile.dir.message.failed"));
+						JOptionPane.showMessageDialog(component, failed, t
+								.get("profile.dir.create.title"),
+								JOptionPane.WARNING_MESSAGE);
+					}
 				}
 			}
 		}

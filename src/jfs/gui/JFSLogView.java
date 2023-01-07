@@ -40,7 +40,7 @@ import jfs.conf.JFSText;
  * This dialog shows logging information.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSLogView.java,v 1.12 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSLogView.java,v 1.13 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSLogView extends JDialog implements ActionListener {
 	/** The UID. */
@@ -149,9 +149,19 @@ public class JFSLogView extends JDialog implements ActionListener {
 		if (cmd.equals("CLEAR")) {
 			// Clean log text area and reset log file:
 			if (type == ERR)
-				JFSLog.getErr().resetLogFile();
+				try {
+					JFSLog.getErr().resetLogFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			else if (type == OUT)
-				JFSLog.getOut().resetLogFile();
+				try {
+					JFSLog.getOut().resetLogFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			setContents();
 		}
 	}

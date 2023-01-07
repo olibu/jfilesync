@@ -28,12 +28,19 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
+import jfs.conf.JFSConfig;
+import jfs.conf.JFSFilter;
 import jfs.conf.JFSSyncModes;
+import jfs.conf.JFSText;
+import jfs.conf.JFSFilter.FilterRange;
+import jfs.conf.JFSFilter.FilterType;
 import jfs.conf.JFSSyncMode.SyncAction;
 import jfs.sync.JFSElement;
 import jfs.sync.JFSTable;
@@ -43,7 +50,7 @@ import jfs.sync.JFSElement.ElementState;
  * This class is responsible for handling actions of the synchronization table.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSTableListener.java,v 1.4 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSTableListener.java,v 1.6 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSTableListener implements MouseListener, ActionListener {
 	/** The parent frame. */
@@ -115,6 +122,24 @@ public class JFSTableListener implements MouseListener, ActionListener {
 	 *            The mouse event to deal with.
 	 */
 	private void handlePopupMenu(MouseEvent e) {
+		// If appropriate, adjust the selection in response to a popup
+		// trigger
+		if (e.isPopupTrigger()) {
+			int row = table.rowAtPoint(e.getPoint());
+			if (row == -1) {
+				// The popup trigger was fired outside the
+				// bounds of the table; ignore it
+				return;
+			}
+			ListSelectionModel model = table.getSelectionModel();
+			if (!model.isSelectedIndex(row)) {
+				// The popup trigger was fired within the
+				// bounds of the table but outside of the
+				// current selection; change the selection
+				model.setSelectionInterval(row, row);
+			}
+		}
+		
 		if (e.isPopupTrigger() && !table.getSelectionModel().isSelectionEmpty()) {
 			// Updates the selection of JFS elements:
 			updateSelection();
@@ -160,8 +185,12 @@ public class JFSTableListener implements MouseListener, ActionListener {
 						"general.reset", this));
 			}
 
-			// Add properties field, if only one element is selected:
+			// Add a properties and a filter creation dialog field, if only one element is selected.
 			if (currentSelection.size() == 1) {
+				popup.addSeparator();
+				popup.add(JFSSupport.getMenuItem("compTable.menu.addinclusionfilter", "ADDINCLUSIONFILTER", this));
+				popup.add(JFSSupport.getMenuItem("compTable.menu.addexclusionfilter", "ADDEXCLUSIONFILTER", this));
+
 				popup.addSeparator();
 				popup.add(JFSSupport.getMenuItem("fileProps.title",
 						"PROPERTIES", this));
@@ -204,6 +233,55 @@ public class JFSTableListener implements MouseListener, ActionListener {
 				}
 			}
 
+			// Show filter add dialog for selected element:
+			if (cmd.equals("ADDINCLUSIONFILTER")) {
+				JFSConfigFilterAddDialog panel = new JFSConfigFilterAddDialog(
+						Pattern.quote(element.getRelativePath()),
+								FilterType.RELATIVE_PATH,
+						FilterRange.ALL);
+
+				int result = JOptionPane.showConfirmDialog(this.parent, panel,
+						JFSText.getInstance().get("profile.filter.add.title")
+								+ " ("
+								+ JFSText.getInstance().get(
+										"profile.filter.includes") + ")",
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.INFORMATION_MESSAGE);
+
+				// If not canceled, add filter:
+				if (result == JOptionPane.OK_OPTION) {
+					JFSFilter f = new JFSFilter(panel.getFilterText());
+					f.setType(panel.getFilterType());
+					f.setRange(panel.getFilterRange());
+					
+					JFSConfig.getInstance().addInclude(f);
+				}
+			}
+			if (cmd.equals("ADDEXCLUSIONFILTER")) {
+				JFSConfigFilterAddDialog panel = new JFSConfigFilterAddDialog(
+						Pattern.quote(element.getRelativePath()),
+						FilterType.RELATIVE_PATH,
+						FilterRange.ALL);
+
+				int result = JOptionPane.showConfirmDialog(this.parent, panel,
+						JFSText.getInstance().get("profile.filter.add.title")
+								+ " ("
+								+ JFSText.getInstance().get(
+										"profile.filter.excludes") + ")",
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.INFORMATION_MESSAGE);
+
+				// If not canceled, add filter:
+				if (result == JOptionPane.OK_OPTION) {
+					JFSFilter f = new JFSFilter(panel.getFilterText());
+					f.setType(panel.getFilterType());
+					f.setRange(panel.getFilterRange());
+
+					JFSConfig.getInstance().addExclude(f);
+					JFSConfig.getInstance().fireUpdate();
+				}
+			}
+			
 			// Show properties for selected element:
 			if (cmd.equals("PROPERTIES")) {
 				new JFSPropertiesView(parent, element);

@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
  * file.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSHistoryXML.java,v 1.7 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSHistoryXML.java,v 1.8 2009/10/08 08:19:53 heidrich Exp $
  * @see jfs.conf.JFSConfig
  */
 class JFSHistoryXML extends JFSHistory {
@@ -43,82 +43,76 @@ class JFSHistoryXML extends JFSHistory {
 	protected boolean load(File file) {
 		// Load the contents of the XML file:
 		JFSText t = JFSText.getInstance();
-		try {
-			// Compute root:
-			Element root = XMLSupport.getDocumentElement(file);
-			if (root == null)
-				return false;
+		// Compute root:
+		Element root = XMLSupport.getDocumentElement(file);
+		if (root == null)
+			return false;
 
-			// Test root element:
-			if (!root.getNodeName().equals("history")) {
-				JFSLog.getErr().getStream().println(t.get("error.xml"));
+		// Test root element:
+		if (!root.getNodeName().equals("history")) {
+			JFSLog.getErr().getStream().println(t.get("error.xml"));
 
-				return false;
-			}
-
-			// Read attributes of root element:
-			try {
-				Attr src = root.getAttributeNode("src");
-				Attr tgt = root.getAttributeNode("tgt");
-				Attr date = root.getAttributeNode("date");
-
-				if (src == null || tgt == null || date == null)
-					return false;
-
-				// Check consistency:
-				JFSDirectoryPair pair = getPair();
-				assert pair != null && pair.getSrc().equals(src.getValue())
-						&& pair.getTgt().equals(tgt.getValue())
-						&& getDate() == Long.parseLong(date.getValue());
-			} catch (AssertionError e) {
-				JFSLog.getErr().getStream().println(
-						t.get("error.xml.load") + ":" + e);
-				return false;
-			} catch (NumberFormatException e) {
-				JFSLog.getErr().getStream()
-						.println(t.get("error.numberFormat"));
-				return false;
-			}
-
-			// Read all specified history items:
-			Node child = root.getFirstChild();
-			history.clear();
-			directories.clear();
-			files.clear();
-			while (child != null) {
-				String nodeName = child.getNodeName();
-				if (nodeName.equals("item")) {
-					Element item = (Element) child;
-					try {
-						Attr path = item.getAttributeNode("path");
-						Attr modified = item.getAttributeNode("modified");
-						Attr length = item.getAttributeNode("length");
-						Attr directory = item.getAttributeNode("directory");
-						JFSHistoryItem i = new JFSHistoryItem(path.getValue());
-						i.setLastModified(Long.parseLong(modified.getValue()));
-						i.setLength(Long.parseLong(length.getValue()));
-						i.setDirectory(Boolean.valueOf(directory.getValue()));
-						history.add(i);
-						if (i.isDirectory()) {
-							directories.put(i.getRelativePath(), i);
-						} else {
-							files.put(i.getRelativePath(), i);
-						}
-					} catch (Exception e) {
-						// Write to error log, but continue:
-						JFSLog.getErr().getStream().println(
-								t.get("error.numberFormat"));
-					}
-				}
-				child = child.getNextSibling();
-			}
-
-			return true;
-		} catch (Exception e) {
-			JFSLog.getErr().getStream().println(t.get("error.xml.load"));
+			return false;
 		}
 
-		return false;
+		// Read attributes of root element:
+		try {
+			Attr src = root.getAttributeNode("src");
+			Attr tgt = root.getAttributeNode("tgt");
+			Attr date = root.getAttributeNode("date");
+
+			if (src == null || tgt == null || date == null)
+				return false;
+
+			// Check consistency:
+			JFSDirectoryPair pair = getPair();
+			assert pair != null && pair.getSrc().equals(src.getValue())
+			&& pair.getTgt().equals(tgt.getValue())
+			&& getDate() == Long.parseLong(date.getValue());
+		} catch (AssertionError e) {
+			JFSLog.getErr().getStream().println(
+					t.get("error.xml.load") + ":" + e);
+			return false;
+		} catch (NumberFormatException e) {
+			JFSLog.getErr().getStream()
+			.println(t.get("error.numberFormat"));
+			return false;
+		}
+
+		// Read all specified history items:
+		Node child = root.getFirstChild();
+		history.clear();
+		directories.clear();
+		files.clear();
+		while (child != null) {
+			String nodeName = child.getNodeName();
+			if (nodeName.equals("item")) {
+				Element item = (Element) child;
+				try {
+					Attr path = item.getAttributeNode("path");
+					Attr modified = item.getAttributeNode("modified");
+					Attr length = item.getAttributeNode("length");
+					Attr directory = item.getAttributeNode("directory");
+					JFSHistoryItem i = new JFSHistoryItem(path.getValue());
+					i.setLastModified(Long.parseLong(modified.getValue()));
+					i.setLength(Long.parseLong(length.getValue()));
+					i.setDirectory(Boolean.valueOf(directory.getValue()));
+					history.add(i);
+					if (i.isDirectory()) {
+						directories.put(i.getRelativePath(), i);
+					} else {
+						files.put(i.getRelativePath(), i);
+					}
+				} catch (NumberFormatException e) {
+					// Write to error log, but continue:
+					JFSLog.getErr().getStream().println(
+							t.get("error.numberFormat"));
+				}
+			}
+			child = child.getNextSibling();
+		}
+
+		return true;
 	}
 
 	/**

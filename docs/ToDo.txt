@@ -1,0 +1,7 @@
+To Do List
+
+- Option for starting comparison after launching GUI
+- Ignoring Summer/Winter time option
+- Investigate Copy NIO
+- Header of main window should contain file name
+- Integrate encryption code from Martin Göllnitz

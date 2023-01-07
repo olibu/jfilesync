@@ -82,7 +82,7 @@ public class JFSDateTimeModifier implements JFSPlugin {
 		location.add(t.get("plugin.dtm.source"));
 		location.add(t.get("plugin.dtm.target"));
 
-		JComboBox box = new JComboBox(location);
+		JComboBox<String> box = new JComboBox<String>(location);
 		confPanel.add(box);
 
 		JLabel diffLabel = new JLabel(t.get("plugin.dtm.difference"));
@@ -90,7 +90,7 @@ public class JFSDateTimeModifier implements JFSPlugin {
 		confPanel.add(diffLabel);
 
 		SpinnerNumberModel diffModel = new SpinnerNumberModel();
-		diffModel.setValue(new Integer(60));
+		diffModel.setValue(60);
 
 		JSpinner spinner = new JSpinner(diffModel);
 		confPanel.add(spinner);

@@ -33,7 +33,7 @@ import java.util.Vector;
  * print stream.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSLog.java,v 1.7 2007/02/26 18:50:12 heidrich Exp $
+ * @version $Id: JFSLog.java,v 1.8 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSLog {
 	/** The error message log. */
@@ -81,22 +81,24 @@ public class JFSLog {
 	 * 
 	 * @param useLogFile
 	 *            True if and only if the log file should be used.
+	 * @throws IOException 
 	 */
-	public void useLogFile(boolean useLogFile) {
+	public void useLogFile(boolean useLogFile) throws IOException {
 		if (useLogFile) {
 			// Redirect error stream to file:
 			File home = new File(JFSConst.HOME_DIR);
 
 			if (!home.exists())
-				home.mkdir();
+				if (!home.mkdir()) {
+					throw new IOException("Unable to create folder: " + home.getAbsolutePath());
+				}
 
-			try {
-				if (!logFile.exists())
-					logFile.createNewFile();
-				currentStream = new PrintStream(new FileOutputStream(logFile));
-			} catch (IOException e) {
-				System.err.println(e);
+			if (!logFile.exists()) {
+				if (!logFile.createNewFile()) {
+					throw new IOException("Unable to create file: " + logFile.getAbsolutePath());
+				}
 			}
+			currentStream = new PrintStream(new FileOutputStream(logFile));
 		} else {
 			currentStream = printStream;
 		}
@@ -107,13 +109,17 @@ public class JFSLog {
 	 * messages are sent to. It is deleted and created from scratch if it
 	 * already exists. The log stream is redirected to the newly created log
 	 * file afterwards.
+	 * @throws IOException 
 	 */
-	public void resetLogFile() {
+	public void resetLogFile() throws IOException {
 		unreadLogMessages = false;
 
 		// Delete previous log file and create new one:
-		if (logFile.exists())
-			logFile.delete();
+		if (logFile.exists()) {
+			if (!logFile.delete()) {
+				throw new IOException("Unable to delete file: " + logFile.getAbsolutePath());
+			}
+		}
 
 		useLogFile(true);
 	}

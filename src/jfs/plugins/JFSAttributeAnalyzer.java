@@ -84,7 +84,7 @@ public class JFSAttributeAnalyzer implements JFSPlugin {
 		location.add(t.get("plugin.aa.source"));
 		location.add(t.get("plugin.aa.target"));
 
-		JComboBox box = new JComboBox(location);
+		JComboBox<String> box = new JComboBox<String>(location);
 		confPanel.add(box);
 
 		int result = JOptionPane.showConfirmDialog(frame, panel,
@@ -101,7 +101,7 @@ public class JFSAttributeAnalyzer implements JFSPlugin {
 			modifyAttributes(sourceTree);
 
 			// View result:
-			JList list = new JList(readOnlyFiles);
+			JList<String> list = new JList<String>(readOnlyFiles);
 			JScrollPane pane = new JScrollPane(list);
 			JOptionPane.showMessageDialog(frame, pane, t
 					.get("plugin.aa.result.title"),

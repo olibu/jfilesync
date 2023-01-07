@@ -33,7 +33,7 @@ import jfs.sync.JFSFormatter;
  * and client.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFileInfo.java,v 1.22 2007/07/18 16:20:49 heidrich Exp $
+ * @version $Id: JFSFileInfo.java,v 1.24 2009/10/02 08:21:19 heidrich Exp $
  */
 public class JFSFileInfo implements Serializable {
 	/** The UID. */
@@ -62,6 +62,9 @@ public class JFSFileInfo implements Serializable {
 
 	/** Determines whether we can write to the file. */
 	private boolean canWrite = true;
+
+	/** Determines whether we can execute the file. */
+	private boolean canExecute = false;
 
 	/** Determines whether the file exists. */
 	private boolean exists = false;
@@ -137,6 +140,7 @@ public class JFSFileInfo implements Serializable {
 		if (exists) {
 			isDirectory = file.isDirectory();
 			if (!isDirectory) {
+				canExecute = file.canExecute();
 				length = file.length();
 				lastModified = file.lastModified();
 			}
@@ -167,11 +171,17 @@ public class JFSFileInfo implements Serializable {
 
 		File file = new File(path);
 
-		if (!isDirectory)
+		if (!isDirectory) {
 			success = success && file.setLastModified(lastModified);
+		}
 
-		if (!canWrite)
+		if (!canWrite) {
 			success = success && file.setReadOnly();
+		}
+
+		if (canExecute) {
+			success = success && file.setExecutable(canExecute);
+		}
 
 		if (isDirectory && list != null) {
 			for (JFSFileInfo fi : list) {
@@ -259,8 +269,8 @@ public class JFSFileInfo implements Serializable {
 	}
 
 	/**
-	 * Returns the virtual path of the file (the root path concattenated with
-	 * the relative path of the file).
+	 * Returns the virtual path of the file (the root path concatenated with the
+	 * relative path of the file).
 	 * 
 	 * @return Virtual path of the file.
 	 */
@@ -285,6 +295,22 @@ public class JFSFileInfo implements Serializable {
 	 */
 	public void setDirectory(boolean b) {
 		isDirectory = b;
+	}
+
+	/**
+	 * Returns whether we can execute the file.
+	 * 
+	 * @return True if and only if we can execute the file.
+	 */
+	public final boolean canExecute() {
+		return canExecute;
+	}
+
+	/**
+	 * Sets whether we can execute this file
+	 */
+	public final void setExecutable(boolean canExecute) {
+		this.canExecute = canExecute;
 	}
 
 	/**

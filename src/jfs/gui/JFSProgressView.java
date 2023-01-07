@@ -51,7 +51,7 @@ import jfs.sync.JFSProgress.ProgressState;
  * during the synchronization.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSProgressView.java,v 1.29 2007/07/20 16:35:36 heidrich Exp $
+ * @version $Id: JFSProgressView.java,v 1.31 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSProgressView extends JDialog implements JFSProgressObserver,
 		ActionListener {
@@ -388,6 +388,7 @@ public class JFSProgressView extends JDialog implements JFSProgressObserver,
 			public void run() {
 				// Wait for dialog to appear:
 				while (!dialog.isVisible()) {
+					yield();
 				}
 
 				// Compare:
@@ -397,6 +398,8 @@ public class JFSProgressView extends JDialog implements JFSProgressObserver,
 				dialog.setVisible(false);
 			}
 		};
+		
+		thread.setName("JFSComparison");
 
 		// Start thread:
 		thread.start();
@@ -416,6 +419,7 @@ public class JFSProgressView extends JDialog implements JFSProgressObserver,
 			public void run() {
 				// Wait for dialog to appear:
 				while (!dialog.isVisible()) {
+					yield();
 				}
 
 				// Synchronize:
@@ -426,6 +430,8 @@ public class JFSProgressView extends JDialog implements JFSProgressObserver,
 
 			}
 		};
+
+		thread.setName("JFSSynchronize");
 
 		// Start thread:
 		thread.start();

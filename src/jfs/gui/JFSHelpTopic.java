@@ -28,7 +28,7 @@ import jfs.conf.JFSText;
  * Represents a help topic.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSHelpTopic.java,v 1.13 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSHelpTopic.java,v 1.14 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSHelpTopic implements Comparable<JFSHelpTopic> {
 
@@ -103,6 +103,37 @@ public class JFSHelpTopic implements Comparable<JFSHelpTopic> {
 			return 1;
 
 		return 0;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		JFSHelpTopic other = (JFSHelpTopic) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		return true;
 	}
 
 	/**

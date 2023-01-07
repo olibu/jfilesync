@@ -39,11 +39,11 @@ import jfs.sync.JFSProgress;
  * File object.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSLocalFile.java,v 1.13 2007/07/20 12:27:52 heidrich Exp $
+ * @version $Id: JFSLocalFile.java,v 1.15 2009/10/02 08:21:19 heidrich Exp $
  */
 public class JFSLocalFile extends JFSFile {
 
-	/** The coresponding file object. */
+	/** The corresponding file object. */
 	private File file = null;
 
 	/** The name of the file. */
@@ -54,6 +54,9 @@ public class JFSLocalFile extends JFSFile {
 
 	/** Tells whether the file is a directory. */
 	private boolean isDirectory = false;
+
+	/** Tells whether we can execute the file. */
+	private boolean canExecute = false;
 
 	/** Tells whether we can read the file. */
 	private boolean canRead = true;
@@ -105,6 +108,7 @@ public class JFSLocalFile extends JFSFile {
 		if (!isDirectory) {
 			length = file.length();
 			lastModified = file.lastModified();
+			canExecute = file.canExecute();
 		}
 	}
 
@@ -148,6 +152,13 @@ public class JFSLocalFile extends JFSFile {
 	 */
 	public final boolean canWrite() {
 		return canWrite;
+	}
+
+	/**
+	 * @see JFSFile#canWrite()
+	 */
+	public final boolean canExecute() {
+		return canExecute;
 	}
 
 	/**
@@ -228,6 +239,22 @@ public class JFSLocalFile extends JFSFile {
 
 		if (success)
 			canWrite = false;
+
+		return success;
+	}
+
+	/**
+	 * @see JFSFile#setExecutable()
+	 */
+	public final boolean setExecutable() {
+		if (!JFSConfig.getInstance().isSetExecutable()) {
+			return true;
+		}
+
+		boolean success = file.setExecutable(true);
+
+		if (success)
+			canExecute = true;
 
 		return success;
 	}
@@ -320,6 +347,8 @@ public class JFSLocalFile extends JFSFile {
 			success = success && setLastModified(srcFile.getLastModified());
 			if (!srcFile.canWrite())
 				success = success && setReadOnly();
+			if (srcFile.canExecute())
+				success = success && setExecutable();
 		}
 
 		return success;

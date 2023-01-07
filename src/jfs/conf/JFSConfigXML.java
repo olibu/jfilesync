@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
  * file.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSConfigXML.java,v 1.24 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSConfigXML.java,v 1.26 2009/10/08 08:19:53 heidrich Exp $
  * @see jfs.conf.JFSConfig
  */
 class JFSConfigXML extends JFSConfig {
@@ -77,6 +77,11 @@ class JFSConfigXML extends JFSConfig {
 				if (attr != null)
 					setView(Byte.parseByte(attr.getValue()));
 
+				attr = root.getAttributeNode("showFileIcons");
+
+				if (attr != null)
+					setShowFileIcons(Boolean.parseBoolean(attr.getValue()));
+
 				attr = root.getAttributeNode("granularity");
 
 				if (attr != null)
@@ -103,6 +108,11 @@ class JFSConfigXML extends JFSConfig {
 
 				if (attr != null)
 					setCanWrite(Boolean.valueOf(attr.getValue()).booleanValue());
+
+				attr = root.getAttributeNode("setexecutable");
+
+				if (attr != null)
+					setExecutable(Boolean.valueOf(attr.getValue()).booleanValue());
 			} catch (NumberFormatException e) {
 				// Thrown by parseInt() and parseByte(). Continue in this case.
 				JFSLog.getErr().getStream()
@@ -128,7 +138,7 @@ class JFSConfigXML extends JFSConfig {
 
 						if (attr != null)
 							serverTimeout = Integer.parseInt(attr.getValue());
-					} catch (Exception e) {
+					} catch (NumberFormatException e) {
 						// Thrown by parseInt() and parseByte(). Continue in
 						// this case.
 						JFSLog.getErr().getStream().println(
@@ -192,7 +202,7 @@ class JFSConfigXML extends JFSConfig {
 			fireUpdate();
 
 			return true;
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			JFSLog.getErr().getStream().println(t.get("error.xml.load"));
 		}
 
@@ -226,6 +236,9 @@ class JFSConfigXML extends JFSConfig {
 			if (getView() != JFSViewModes.getInstance().getDefaultMode())
 				root.setAttribute("view", String.valueOf(getView()));
 
+			if (isShowFileIcons() != JFSConst.SHOW_FILE_ICONS)
+				root.setAttribute("showFileIcons", String.valueOf(isShowFileIcons()));
+
 			if (getGranularity() != JFSConst.GRANULARITY)
 				root.setAttribute("granularity", String
 						.valueOf(getGranularity()));
@@ -246,6 +259,10 @@ class JFSConfigXML extends JFSConfig {
 			if (isSetCanWrite() != JFSConst.SET_CAN_WRITE)
 				root.setAttribute("setcanwrite", String
 						.valueOf(isSetCanWrite()));
+
+			if (isSetExecutable () != JFSConst.SET_EXECUTABLE)
+				root.setAttribute("setexecutable", String
+						.valueOf(isSetExecutable ()));
 
 			// Add server settings if not equal to default:
 			if ((serverPort != JFSConst.SERVER_PORT)

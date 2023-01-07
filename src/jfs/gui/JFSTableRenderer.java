@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.HashMap;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -30,6 +31,7 @@ import javax.swing.JTable;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.TableCellRenderer;
 
+import jfs.conf.JFSConfig;
 import jfs.conf.JFSConst;
 import jfs.conf.JFSText;
 import jfs.conf.JFSSyncMode.SyncAction;
@@ -42,7 +44,7 @@ import jfs.sync.JFSElement.ElementState;
  * This class is responsible for rendering the synchronization table.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSTableRenderer.java,v 1.4 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSTableRenderer.java,v 1.5 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSTableRenderer implements TableCellRenderer {
 	/** Color definition for files that have to be copied from source. */
@@ -165,8 +167,9 @@ public class JFSTableRenderer implements TableCellRenderer {
 
 		// Get the right component first and set alignment:
 		JComponent component;
+		SyncAction action = element.getAction();
 		if (column == 3) {
-			component = actionIcons.get(element.getAction());
+			component = actionIcons.get(action);
 			if (component == null)
 				component = actionIcons.get(SyncAction.NOP);
 		} else {
@@ -180,13 +183,12 @@ public class JFSTableRenderer implements TableCellRenderer {
 			}
 
 			cell.setIcon(null);
-			if (column == 0 || column == 4) {
-				if (jfsFile != null && jfsFile.getFile() != null
-						&& jfsFile.getFile().exists()) {
-					try {
-						cell.setIcon(fsv.getSystemIcon(jfsFile.getFile()));
-					} catch (Exception e) {
-						cell.setIcon(null);
+			if ((column == 0 || column == 4) && JFSConfig.getInstance().isShowFileIcons() ) {
+				if (jfsFile != null && jfsFile.getFile() != null) {
+					//TODO: Maybe do caching? Memory footprint?
+					if (jfsFile.exists()) {
+						Icon icon = fsv.getSystemIcon(jfsFile.getFile());
+						cell.setIcon(icon);
 					}
 				}
 			}
@@ -195,15 +197,15 @@ public class JFSTableRenderer implements TableCellRenderer {
 		// Set tool tip text for component:
 		if (column == 3) {
 			component.setToolTipText(JFSText.getInstance().get(
-					element.getAction().getName()));
+					action.getName()));
 		} else {
 			component.setToolTipText(null);
 		}
 
 		// Set foreground and background colors:
-		boolean warning = element.getAction() == SyncAction.ASK_LENGTH_INCONSISTENT
-				|| element.getAction() == SyncAction.ASK_FILES_GT_HISTORY
-				|| element.getAction() == SyncAction.ASK_FILES_NOT_IN_HISTORY;
+		boolean warning = action == SyncAction.ASK_LENGTH_INCONSISTENT
+				|| action == SyncAction.ASK_FILES_GT_HISTORY
+				|| action == SyncAction.ASK_FILES_NOT_IN_HISTORY;
 		if (isSelected) {
 			if (warning) {
 				component.setForeground(WARNING_SELECTED);
@@ -225,8 +227,7 @@ public class JFSTableRenderer implements TableCellRenderer {
 			// Color the action column according to the action performed:
 			component.setBackground(table.getBackground());
 			if (column == 3) {
-				component.setBackground(actionBackgrounds.get(element
-						.getAction()));
+				component.setBackground(actionBackgrounds.get(action));
 			}
 
 			// If the background was not changed look for specific rows:

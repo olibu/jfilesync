@@ -1,6 +1,22 @@
 JFileSync Change History
 
 
+Version 2.3 (2013/06/19)
+- Added the following new features:
+  - Added support for SFTP (will replace JFS own server implementation in the
+    middle-term).
+  - Added Russian language files (by Alexey Osipov).
+  - Added plugin for ignoring SVN and CVS files (by Jan Rieke).
+- Improved the following existing features:
+  - Row of comparison table is selected automatically, when pressing the right
+    mouse button (by Bobby Eickhoff). Before, you had to select a single row
+    using the left mouse button, before being able to display the pop-up menu.
+  - Increase Java heap memory for JFS start scripts.
+- News behind the scene (developer-specific):
+  - The JAR libraries and some sample profiles are now also in CVS.
+  - Some adaptations for Java 7.
+
+
 Version 2.2 (2007/07/20)
 - Added the following new features:
   - Added new dialog to specify local and external/server directory pairs.

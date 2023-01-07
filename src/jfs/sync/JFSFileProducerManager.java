@@ -24,11 +24,12 @@ import java.util.HashMap;
 import jfs.conf.JFSConst;
 import jfs.sync.external.JFSExternalFileProducerFactory;
 import jfs.sync.local.JFSLocalFileProducerFactory;
+import jfs.sync.vfs.JFSVFSFileProducerFactory;
 
 /**
  * This class manages all JFS file producer factories that exist for the
  * program. It is able to detect the right file producer for a certain scheme
- * (like "ext" or "file") and advices the correspondig producer factory to
+ * (like "ext" or "file") and stimulates the corresponding producer factory to
  * create a new file produces or to destroy an already existing file producer.
  * 
  * @author Jens Heidrich
@@ -40,20 +41,19 @@ public class JFSFileProducerManager {
 	private static JFSFileProducerManager instance = null;
 
 	/** All registered factories for a certain URI scheme. */
-	private final HashMap<String, JFSFileProducerFactory> factories;
-
-	/** The default factory. */
-	private final JFSFileProducerFactory defaultFactory;
+	private final HashMap<String, JFSFileProducerFactory> factories = new HashMap<String, JFSFileProducerFactory>();
 
 	/**
 	 * Registers all factories and sets the default factory.
 	 */
 	private JFSFileProducerManager() {
-		factories = new HashMap<String, JFSFileProducerFactory>();
+		factories.put(JFSConst.SCHEME_LOCAL, new JFSLocalFileProducerFactory());
 		factories.put(JFSConst.SCHEME_EXTERNAL,
 				new JFSExternalFileProducerFactory());
-		factories.put(JFSConst.SCHEME_LOCAL, new JFSLocalFileProducerFactory());
-		defaultFactory = factories.get(JFSConst.SCHEME_LOCAL);
+		JFSVFSFileProducerFactory vfsFactory = new JFSVFSFileProducerFactory();
+		for (String s : JFSConst.SCHEME_VFS) {
+			factories.put(s, vfsFactory);
+		}
 	}
 
 	/**
@@ -78,34 +78,34 @@ public class JFSFileProducerManager {
 	}
 
 	/**
-	 * Returns a new procucer for a special URI.
+	 * Returns a new producer for a special URI.
 	 * 
 	 * @param uri
 	 *            The URI to create the producer for.
 	 * @return The created producer.
 	 */
 	public final JFSFileProducer createProducer(String uri) {
-		return getFactory(uri).createProducer(uri);
+		return factories.get(getScheme(uri)).createProducer(uri);
 	}
 
 	/**
 	 * Shuts down an existing producer for a special URI.
 	 * 
 	 * @param uri
-	 *            The URI to distroy the producer for.
+	 *            The URI to destroy the producer for.
 	 */
 	public final void shutDownProducer(String uri) {
-		getFactory(uri).shutDownProducer(uri);
+		factories.get(getScheme(uri)).shutDownProducer(uri);
 	}
 
 	/**
 	 * Cancels an existing producer for a special URI.
 	 * 
 	 * @param uri
-	 *            The URI to distroy the producer for.
+	 *            The URI to destroy the producer for.
 	 */
 	public final void cancelProducer(String uri) {
-		getFactory(uri).cancelProducer(uri);
+		factories.get(getScheme(uri)).cancelProducer(uri);
 	}
 
 	/**
@@ -115,12 +115,12 @@ public class JFSFileProducerManager {
 	 *            The URI to create the factory for.
 	 * @return The created factory.
 	 */
-	private final JFSFileProducerFactory getFactory(String uri) {
+	public final String getScheme(String uri) {
 		for (String scheme : factories.keySet()) {
 			if (uri.startsWith(scheme + ":"))
-				return factories.get(scheme);
+				return scheme;
 		}
 
-		return defaultFactory;
+		return JFSConst.SCHEME_LOCAL;
 	}
 }

@@ -20,6 +20,7 @@
 package jfs.conf;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -31,7 +32,7 @@ import org.w3c.dom.Node;
  * Loads and saves the program settings from or to an XML file.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSSettingsXML.java,v 1.18 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSSettingsXML.java,v 1.19 2009/10/08 08:19:53 heidrich Exp $
  * @see jfs.conf.JFSSettings
  */
 class JFSSettingsXML extends JFSSettings {
@@ -143,25 +144,35 @@ class JFSSettingsXML extends JFSSettings {
 
 			// Sort histories after reading all from file:
 			hm.sortHistories();
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			JFSLog.getErr().getStream().println(t.get("error.xml.load"));
 		}
 	}
 
 	/**
+	 * @throws IOException 
 	 * @see JFSSettings#store()
 	 */
 	public final void store() {
+		JFSText t = JFSText.getInstance();
 		// Create home if it does not exists:
 		File home = new File(JFSConst.HOME_DIR);
-		if (!home.exists())
-			home.mkdir();
+		if (!home.exists()) {
+			if (!home.mkdir()) {
+				JFSLog.getErr().getStream().println(t.get("error.io") + " " + home.getAbsolutePath());
+				return;
+			}
+		}
 
 		// Clean history files:
-		JFSHistoryManager.getInstance().cleanHistories();
+		try {
+			JFSHistoryManager.getInstance().cleanHistories();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		// Create the DOM and store the contents:
-		JFSText t = JFSText.getInstance();
 		try {
 			Document doc = XMLSupport.newDocument();
 			if (doc == null)

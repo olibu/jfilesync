@@ -29,7 +29,7 @@ import jfs.sync.JFSProgress.ProgressActivity;
  * Compares all JFS directory pairs and adds the results to the table.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSComparison.java,v 1.31 2007/07/18 16:20:49 heidrich Exp $
+ * @version $Id: JFSComparison.java,v 1.32 2008/06/11 12:54:27 heidrich Exp $
  */
 public class JFSComparison {
 
@@ -235,6 +235,7 @@ public class JFSComparison {
 		monitor.increase(pairs.size(), 1);
 
 		// Start comparison:
+		JFSFileProducerManager.getInstance().resetProducers();
 		JFSTable table = JFSTable.getInstance();
 		table.clean();
 		for (JFSDirectoryPair pair : pairs) {

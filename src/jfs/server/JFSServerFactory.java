@@ -20,6 +20,7 @@
 package jfs.server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import jfs.conf.JFSConfig;
@@ -31,7 +32,7 @@ import jfs.conf.JFSText;
  * This produces and maintains a JFS server.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSServerFactory.java,v 1.14 2007/07/20 08:12:05 heidrich Exp $
+ * @version $Id: JFSServerFactory.java,v 1.15 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSServerFactory implements JFSConfigObserver {
 
@@ -98,8 +99,10 @@ public class JFSServerFactory implements JFSConfigObserver {
 
 		while (input != null && !input.equals("stop")) {
 			try {
-				input = cmdReader.readLine().toLowerCase();
-			} catch (Exception e) {
+				input = cmdReader.readLine();
+				if (input != null)
+					input = input.toLowerCase();
+			} catch (IOException e) {
 				input = null;
 			}
 		}

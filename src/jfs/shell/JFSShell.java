@@ -40,6 +40,7 @@ import jfs.sync.JFSDeleteStatement;
 import jfs.sync.JFSProgress;
 import jfs.sync.JFSSynchronization;
 import jfs.sync.JFSTable;
+import jfs.sync.JFSUserAuthentication;
 
 /**
  * The JFS shell performs a command line comparison and synchronization. First
@@ -48,7 +49,7 @@ import jfs.sync.JFSTable;
  * perform the synchronization depeding on the command line options.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSShell.java,v 1.11 2007/02/26 18:49:11 heidrich Exp $
+ * @version $Id: JFSShell.java,v 1.13 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSShell {
 
@@ -145,8 +146,11 @@ public class JFSShell {
 		JFSProgress.getInstance().attach(new JFSProgressPrint());
 
 		// Set question oracle if not quiet:
-		if (!quiet)
+		if (!quiet) {
+			JFSUserAuthentication.getInstance().setUserInterface(
+					new JFSUserAuthenticationPrint());
 			synchronization.getQuestion().setOracle(new JFSQuestionPrint());
+		}
 
 		p.println(t.get("cmd.startComp"));
 		p.println();
@@ -163,76 +167,79 @@ public class JFSShell {
 
 			String input = "";
 
-			while (!input.equals("exit") && !input.equals("sync")) {
+			while (input != null && !input.equals("exit") && !input.equals("sync")) {
 				p.print("jfs>");
 
 				try {
-					input = din.readLine().toLowerCase();
+					input = din.readLine();
+					if (input != null) {
+						input = input.toLowerCase();
 
-					if (input.equals("t")) {
-						JFSPrint.printComparisonTable();
-					} else if (input.equals("c")) {
-						JFSPrint.printCopyStatements(table.getCopyStatements());
-					} else if (input.equals("d")) {
-						JFSPrint.printDeleteStatements(table
-								.getDeleteStatements());
-					} else if (input.startsWith("c ")) {
-						Vector<JFSCopyStatement> list = table
-								.getCopyStatements();
-						int number = JFSShell.parseInt(input, 1, list.size());
+						if (input.equals("t")) {
+							JFSPrint.printComparisonTable();
+						} else if (input.equals("c")) {
+							JFSPrint.printCopyStatements(table.getCopyStatements());
+						} else if (input.equals("d")) {
+							JFSPrint.printDeleteStatements(table
+									.getDeleteStatements());
+						} else if (input.startsWith("c ")) {
+							Vector<JFSCopyStatement> list = table
+							.getCopyStatements();
+							int number = JFSShell.parseInt(input, 1, list.size());
 
-						if (number != -1) {
-							JFSCopyStatement cs = list.elementAt(number - 1);
-							cs.setCopyFlag(!cs.getCopyFlag());
-						}
-					} else if (input.startsWith("d ")) {
-						Vector<JFSDeleteStatement> list = table
-								.getDeleteStatements();
-						int number = JFSShell.parseInt(input, 1, list.size());
+							if (number != -1) {
+								JFSCopyStatement cs = list.elementAt(number - 1);
+								cs.setCopyFlag(!cs.getCopyFlag());
+							}
+						} else if (input.startsWith("d ")) {
+							Vector<JFSDeleteStatement> list = table
+							.getDeleteStatements();
+							int number = JFSShell.parseInt(input, 1, list.size());
 
-						if (number != -1) {
-							JFSDeleteStatement ds = list.elementAt(number - 1);
-							ds.setDeleteFlag(!ds.getDeleteFlag());
-						}
-					} else if (input.startsWith("view ")) {
-						int number = JFSShell.parseInt(input, 0,
-								Integer.MAX_VALUE);
+							if (number != -1) {
+								JFSDeleteStatement ds = list.elementAt(number - 1);
+								ds.setDeleteFlag(!ds.getDeleteFlag());
+							}
+						} else if (input.startsWith("view ")) {
+							int number = JFSShell.parseInt(input, 0,
+									Integer.MAX_VALUE);
 
-						// If the argument is a valid number then set a
-						// new view in the configuration object:
-						if (JFSViewModes.getInstance().contains(number)) {
-							config.setView((byte) number);
-						} else {
+							// If the argument is a valid number then set a
+							// new view in the configuration object:
+							if (JFSViewModes.getInstance().contains(number)) {
+								config.setView((byte) number);
+							} else {
+								JFSLog.getErr().getStream().println(
+										t.get("error.numberFormat"));
+							}
+						} else if (input.startsWith("sync ")) {
+							int number = JFSShell.parseInt(input, 0,
+									Integer.MAX_VALUE);
+
+							// If the argument is a valid number then set the
+							// new mode in the configuration object and re-init
+							// the tables of files to copy and to delete
+							// appropriately:
+							JFSSyncModes modes = JFSSyncModes.getInstance();
+							if (modes.contains(number)) {
+								config.setSyncMode((byte) number);
+								JFSTable.getInstance().recomputeActionsAndView();
+								synchronization.computeSynchronizationLists();
+							} else {
+								JFSLog.getErr().getStream().println(
+										t.get("error.numberFormat"));
+							}
+						} else if (input.equals("help")) {
+							JFSShell.printURL(JFSConst.getInstance()
+									.getResourceUrl("jfs.help.topic.shell"));
+						} else if (input.equals("sync")) {
+							synchronize();
+						} else if (input.equals("exit")) {
+							// Just leave the loop.
+						} else if (input.length() > 0) {
 							JFSLog.getErr().getStream().println(
-									t.get("error.numberFormat"));
+									t.get("error.validCommand"));
 						}
-					} else if (input.startsWith("sync ")) {
-						int number = JFSShell.parseInt(input, 0,
-								Integer.MAX_VALUE);
-
-						// If the argument is a valid number then set the
-						// new mode in the configuration object and re-init
-						// the tables of files to copy and to delete
-						// appropriately:
-						JFSSyncModes modes = JFSSyncModes.getInstance();
-						if (modes.contains(number)) {
-							config.setSyncMode((byte) number);
-							JFSTable.getInstance().recomputeActionsAndView();
-							synchronization.computeSynchronizationLists();
-						} else {
-							JFSLog.getErr().getStream().println(
-									t.get("error.numberFormat"));
-						}
-					} else if (input.equals("help")) {
-						JFSShell.printURL(JFSConst.getInstance()
-								.getResourceUrl("jfs.help.topic.shell"));
-					} else if (input.equals("sync")) {
-						synchronize();
-					} else if (input.equals("exit")) {
-						// Just leave the loop.
-					} else if (input.length() > 0) {
-						JFSLog.getErr().getStream().println(
-								t.get("error.validCommand"));
 					}
 				} catch (IOException e) {
 					// Thrown by readLine(). Continue in this case.

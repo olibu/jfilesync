@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jFileSync sync="10" title="Test Local Directory Synchronization" version="2.2">
+  <directory src="sftp://heidrich@localhost:64850/home/heidrich/test/" tgt="sftp://heidrich@localhost:64850/home/heidrich/test2"/>
+</jFileSync>

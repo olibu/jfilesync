@@ -34,7 +34,7 @@ import jfs.conf.JFSText;
  * File object.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFile.java,v 1.33 2007/07/20 12:27:52 heidrich Exp $
+ * @version $Id: JFSFile.java,v 1.36 2009/10/08 08:19:53 heidrich Exp $
  */
 public abstract class JFSFile implements Comparable<JFSFile> {
 
@@ -105,8 +105,15 @@ public abstract class JFSFile implements Comparable<JFSFile> {
 	public abstract boolean isDirectory();
 
 	/**
+	 * Returns whether we can execute the file.
+	 *
+	 * @return True if and only if we execute the file.
+	 */
+	public abstract boolean canExecute();
+
+	/**
 	 * Returns whether we can read the file.
-	 * 
+	 *
 	 * @return True if and only if we can read the file.
 	 */
 	public abstract boolean canRead();
@@ -135,6 +142,7 @@ public abstract class JFSFile implements Comparable<JFSFile> {
 	/**
 	 * Returns the included files. The returned list must be not equal to null.
 	 * If no children exist, an array of size zero is returned.
+	 * Caching is recommended.
 	 * 
 	 * @return An array of JFSFile objects included in the directory.
 	 */
@@ -225,10 +233,18 @@ public abstract class JFSFile implements Comparable<JFSFile> {
 	/**
 	 * Marks the file or directory named by this abstract pathname so that only
 	 * read operations are allowed.
-	 * 
+	 *
 	 * @return True if and only if the operation succeeded; false otherwise.
 	 */
 	public abstract boolean setReadOnly();
+
+	/**
+	 * Marks the file or directory named by this abstract pathname so that
+	 * it can be executed.
+	 *
+	 * @return True if and only if the operation succeeded; false otherwise.
+	 */
+	public abstract boolean setExecutable();
 
 	/**
 	 * Deletes the file or directory denoted by this abstract pathname. If this
@@ -310,7 +326,8 @@ public abstract class JFSFile implements Comparable<JFSFile> {
 
 	/**
 	 * Flushes all changes to the file object if not performed yet. This is done
-	 * recursively. So, a flush on the root file performs a flush on all childs.
+	 * recursively. So, a flush on the root file performs a flush on all
+	 * children.
 	 * 
 	 * @return True if and only if the operation was successful.
 	 */
@@ -318,9 +335,9 @@ public abstract class JFSFile implements Comparable<JFSFile> {
 
 	/**
 	 * Writes the content of the JFS file to a new target file. If this file is
-	 * a directory false is returned. This mothod just copies the contents from
+	 * a directory false is returned. This method just copies the contents from
 	 * this file to the target file, no attributes, like the last modified date
-	 * or the can attribute are adpated.
+	 * or the can attribute are adapted.
 	 * 
 	 * @param in
 	 *            The input stream of the source file.

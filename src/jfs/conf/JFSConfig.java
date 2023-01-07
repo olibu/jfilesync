@@ -20,6 +20,7 @@
 package jfs.conf;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 import jfs.sync.JFSFile;
@@ -28,7 +29,7 @@ import jfs.sync.JFSFile;
  * Manages all configuration options of JFileSync user profile.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSConfig.java,v 1.31 2007/06/06 19:51:33 heidrich Exp $
+ * @version $Id: JFSConfig.java,v 1.33 2009/10/08 08:19:53 heidrich Exp $
  */
 public abstract class JFSConfig implements Cloneable {
 
@@ -36,7 +37,7 @@ public abstract class JFSConfig implements Cloneable {
 	private static JFSConfig instance = null;
 
 	/** Stores the default configuration file. */
-	protected static File defaultFile = new File(JFSConst.HOME_DIR
+	protected final static File defaultFile = new File(JFSConst.HOME_DIR
 			+ File.separator + JFSConst.DEFAULT_PROFILE_FILE);
 
 	/** Stores the title of the configuration. */
@@ -47,6 +48,9 @@ public abstract class JFSConfig implements Cloneable {
 
 	/** Stores the current view onto the comparison table. */
 	protected byte view;
+
+	/** Determines whether file icons should be shown. */
+	protected boolean showFileIcons;
 
 	/** Vector with all directory pairs that have to be compared. */
 	protected Vector<JFSDirectoryPair> directoryList = new Vector<JFSDirectoryPair>();
@@ -65,6 +69,9 @@ public abstract class JFSConfig implements Cloneable {
 
 	/** Determines whether the set can write property of a file is set. */
 	protected boolean setCanWrite;
+
+	/** Determines whether the set executable property of a file is set. */
+	protected boolean setExecutable;
 
 	/** The files to include in comparison. */
 	protected Vector<JFSFilter> includes = new Vector<JFSFilter>();
@@ -90,7 +97,7 @@ public abstract class JFSConfig implements Cloneable {
 	/** Determines whether the current profile was stored to a file. */
 	protected boolean isCurrentProfileStored;
 
-	/** Vector with all oberservers of the configuration object. */
+	/** Vector with all observers of the configuration object. */
 	protected Vector<JFSConfigObserver> observers = new Vector<JFSConfigObserver>();
 
 	/**
@@ -120,6 +127,7 @@ public abstract class JFSConfig implements Cloneable {
 		title = JFSText.getInstance().get("profile.defaultTitle");
 		syncMode = (byte) JFSSyncModes.getInstance().getDefaultMode();
 		view = (byte) JFSViewModes.getInstance().getDefaultMode();
+		showFileIcons = JFSConst.SHOW_FILE_ICONS;
 		directoryList.clear();
 
 		// Advanced settings:
@@ -128,6 +136,7 @@ public abstract class JFSConfig implements Cloneable {
 		keepUserActions = JFSConst.KEEP_USER_ACTIONS;
 		storeHistory = JFSConst.STORE_HISTORY;
 		setCanWrite = JFSConst.SET_CAN_WRITE;
+		setExecutable = JFSConst.SET_EXECUTABLE;
 
 		// Includes and excludes:
 		includes.clear();
@@ -162,12 +171,16 @@ public abstract class JFSConfig implements Cloneable {
 	 * Stores the default configuration file to the user's home directory after
 	 * program termination (GUI only). If the directory doesn't exist, it is
 	 * created from scratch.
+	 * @throws IOException 
 	 */
-	public final void storeDefaultFile() {
+	public final void storeDefaultFile() throws IOException {
 		File home = new File(JFSConst.HOME_DIR);
 
-		if (!home.exists())
-			home.mkdir();
+		if (!home.exists()) {
+			if (!home.mkdir()) {
+				throw new IOException("Unable to create folder: " + home.getAbsolutePath());
+			}
+		}
 
 		storeProfile(defaultFile);
 	}
@@ -473,7 +486,7 @@ public abstract class JFSConfig implements Cloneable {
 
 	/**
 	 * Determines whether the set can write property of a file is set.
-	 * 
+	 *
 	 * @param setCanWrite
 	 *            True if and only if the set can write property of a file is
 	 *            set.
@@ -481,6 +494,27 @@ public abstract class JFSConfig implements Cloneable {
 	public void setCanWrite(boolean setCanWrite) {
 		if (setCanWrite != this.setCanWrite) {
 			this.setCanWrite = setCanWrite;
+			setCurrentProfileStored(false);
+		}
+	}
+
+	/**
+	 * @return Determines whether the set executable property of a file is set.
+	 */
+	public boolean isSetExecutable() {
+		return setExecutable;
+	}
+
+	/**
+	 * Determines whether the set can write property of a file is set.
+	 *
+	 * @param setExecutable
+	 *            True if and only if the set can write property of a file is
+	 *            set.
+	 */
+	public void setExecutable(boolean setExecutable) {
+		if (setExecutable != this.setExecutable) {
+			this.setExecutable = setExecutable;
 			setCurrentProfileStored(false);
 		}
 	}
@@ -811,10 +845,20 @@ public abstract class JFSConfig implements Cloneable {
 			configUpdate = true;
 		}
 
+		if (showFileIcons != config.showFileIcons) {
+			config.showFileIcons = showFileIcons;
+			configUpdate = true;
+		}
+		
 		if (!directoryList.equals(config.directoryList)) {
 			config.directoryList.clear();
-			for (JFSDirectoryPair pair : directoryList)
-				config.directoryList.add(pair.clone());
+			for (JFSDirectoryPair pair : directoryList) {
+				try {
+					config.directoryList.add(pair.clone());
+				} catch (CloneNotSupportedException e) {
+					continue;
+				}
+			}
 			comparisonUpdate = true;
 		}
 
@@ -847,15 +891,25 @@ public abstract class JFSConfig implements Cloneable {
 		// Transfer includes and excludes:
 		if (!includes.equals(config.includes)) {
 			config.includes.clear();
-			for (JFSFilter f : includes)
-				config.includes.add(f.clone());
+			for (JFSFilter f : includes) {
+				try {
+					config.includes.add(f.clone());
+				} catch (CloneNotSupportedException e) {
+					continue;
+				}
+			}
 			comparisonUpdate = true;
 		}
 
 		if (!excludes.equals(config.excludes)) {
 			config.excludes.clear();
-			for (JFSFilter f : excludes)
-				config.excludes.add(f.clone());
+			for (JFSFilter f : excludes) {
+				try {
+					config.excludes.add(f.clone());
+				} catch (CloneNotSupportedException e) {
+					continue;
+				}
+			}
 			comparisonUpdate = true;
 		}
 
@@ -911,5 +965,28 @@ public abstract class JFSConfig implements Cloneable {
 		this.transferContentTo(clone);
 
 		return clone;
+	}
+
+	/**
+	 * Returns whether file icons should be shown.
+	 * 
+	 * @return Number of the chosen view.
+	 */
+	public boolean isShowFileIcons() {
+		return showFileIcons;
+	}
+
+
+	/**
+	 * Sets whether to show file icons.
+	 * 
+	 * @param showFileIcons
+	 *            true for visible file icons.
+	 */
+	public void setShowFileIcons(boolean showFileIcons) {
+		if (this.showFileIcons != showFileIcons) {
+			this.showFileIcons = showFileIcons;
+			setCurrentProfileStored(false);
+		}
 	}
 }

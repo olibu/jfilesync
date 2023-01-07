@@ -23,13 +23,14 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Manages all JFileSync settings. The class implements the singleton design
  * pattern.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSSettings.java,v 1.21 2007/07/20 14:07:11 heidrich Exp $
+ * @version $Id: JFSSettings.java,v 1.22 2009/10/08 08:19:53 heidrich Exp $
  */
 public abstract class JFSSettings {
 
@@ -37,7 +38,7 @@ public abstract class JFSSettings {
 	private static JFSSettings instance = null;
 
 	/** The settings file containing all attribute values. */
-	protected static File file = new File(JFSConst.HOME_DIR + File.separator
+	protected final static File file = new File(JFSConst.HOME_DIR + File.separator
 			+ JFSConst.SETTINGS_FILE);
 
 	/** Determines whether the system runs in debug mode (not stored). */
@@ -122,7 +123,11 @@ public abstract class JFSSettings {
 		if (!nogui) {
 			try {
 				UIManager.setLookAndFeel(laf);
-			} catch (Exception e) {
+			} catch (ClassNotFoundException e) {
+				//TODO: Exception handling necessary?
+			} catch (InstantiationException e) {
+			} catch (IllegalAccessException e) {
+			} catch (UnsupportedLookAndFeelException e) {
 			}
 		}
 	}
@@ -177,7 +182,11 @@ public abstract class JFSSettings {
 		if (!nogui) {
 			try {
 				UIManager.setLookAndFeel(laf);
-			} catch (Exception e) {
+			} catch (ClassNotFoundException e) {
+				//TODO: Exception handling necessary?
+			} catch (InstantiationException e) {
+			} catch (IllegalAccessException e) {
+			} catch (UnsupportedLookAndFeelException e) {
 			}
 		}
 	}
@@ -397,7 +406,10 @@ public abstract class JFSSettings {
 		if (!nogui) {
 			try {
 				UIManager.setLookAndFeel(laf);
-			} catch (Exception e) {
+			} catch (ClassNotFoundException e) {
+			} catch (InstantiationException e) {
+			} catch (IllegalAccessException e) {
+			} catch (UnsupportedLookAndFeelException e) {
 			}
 		}
 	}

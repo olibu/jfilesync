@@ -25,6 +25,8 @@ import java.util.ResourceBundle;
 
 import javax.swing.JFrame;
 
+import jfs.sync.vfs.JFSVFSFileProducer;
+
 /**
  * Class JFSConst stores all constant variables including the possible
  * synchronization modes and the possible views onto the files. Moreover it is
@@ -32,7 +34,7 @@ import javax.swing.JFrame;
  * class implements the singleton design pattern.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSConst.java,v 1.28 2007/07/20 14:19:20 heidrich Exp $
+ * @version $Id: JFSConst.java,v 1.32 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSConst {
 
@@ -89,6 +91,9 @@ public class JFSConst {
 	/** The default JFileSync main window's height. */
 	public static final int WINDOW_HEIGHT = 600;
 
+	/** The default file icon visibility. */
+	public static final boolean SHOW_FILE_ICONS = false;
+
 	/** The default granularity in ms for a comparison of two files. */
 	public static final int GRANULARITY = 2000;
 
@@ -103,6 +108,9 @@ public class JFSConst {
 
 	/** Determines whether the set can write property of a file is set. */
 	public static final boolean SET_CAN_WRITE = true;
+
+	/** Determines whether the set executable property of a file is set. */
+	public static final boolean SET_EXECUTABLE = true;
 
 	/** The used default server port. */
 	public static final int SERVER_PORT = 55200;
@@ -124,6 +132,9 @@ public class JFSConst {
 
 	/** The prefix used to indicate a local file. */
 	public static final String SCHEME_LOCAL = "file";
+
+	/** The prefix used to indicate an VFS file. */
+	public static final String[] SCHEME_VFS = JFSVFSFileProducer.getSchemes();
 
 	/**
 	 * The time interval between an update of the progress observers in
@@ -225,12 +236,12 @@ public class JFSConst {
 	public final URL getUrl(String fileName) {
 		URL fileUrl = null;
 
-		try {
+		//try {
 			fileUrl = ClassLoader.getSystemResource(fileName);
-		} catch (Exception e) {
+		/*} catch (Exception e) {
 			JFSLog.getErr().getStream().println(
 					"Couldn't create URL: " + fileName);
-		}
+		}*/
 
 		return fileUrl;
 	}

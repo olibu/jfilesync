@@ -41,7 +41,7 @@ import jfs.conf.JFSFilter.FilterType;
  * A table displaying filters (to include/exclude files).
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFilterTable.java,v 1.6 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSFilterTable.java,v 1.7 2013/06/19 09:36:27 heidrich Exp $
  */
 public class JFSFilterTable extends AbstractTableModel {
 	/** The UID. */
@@ -67,11 +67,11 @@ public class JFSFilterTable extends AbstractTableModel {
 		DefaultTableColumnModel cm = new DefaultTableColumnModel();
 
 		JCheckBox cb = new JCheckBox();
-		JComboBox typeCombo = new JComboBox();
+		JComboBox<String> typeCombo = new JComboBox<String>();
 		for (FilterType fType : FilterType.values()) {
 			typeCombo.addItem(t.get(fType.getName()));
 		}
-		JComboBox rangeCombo = new JComboBox();
+		JComboBox<String> rangeCombo = new JComboBox<String>();
 		for (FilterRange fRange : FilterRange.values()) {
 			rangeCombo.addItem(t.get(fRange.getName()));
 		}

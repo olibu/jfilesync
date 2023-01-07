@@ -25,7 +25,7 @@ package jfs.sync;
  * the source and the target side specified in the comparison object.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFileProducer.java,v 1.8 2007/06/06 19:51:33 heidrich Exp $
+ * @version $Id: JFSFileProducer.java,v 1.9 2008/06/10 18:35:22 heidrich Exp $
  */
 public abstract class JFSFileProducer {
 	/** The URI scheme. */
@@ -34,7 +34,7 @@ public abstract class JFSFileProducer {
 	/** The URI assigned. */
 	private final String uri;
 
-	/** The original unmodifief directory path extracted from the URI. */
+	/** The original unmodified directory path extracted from the URI. */
 	private final String originalRootPath;
 
 	/** The directory path extracted from the URI. */

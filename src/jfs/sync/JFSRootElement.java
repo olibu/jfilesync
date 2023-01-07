@@ -25,6 +25,7 @@ import jfs.conf.JFSDirectoryPair;
 import jfs.conf.JFSHistory;
 import jfs.conf.JFSHistoryManager;
 import jfs.conf.JFSLog;
+import jfs.conf.JFSSyncMode;
 import jfs.conf.JFSText;
 import jfs.conf.JFSSyncMode.SyncAction;
 
@@ -33,7 +34,7 @@ import jfs.conf.JFSSyncMode.SyncAction;
  * target side, which may be accessed (and shut down) via this object.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSRootElement.java,v 1.4 2007/07/20 16:35:36 heidrich Exp $
+ * @version $Id: JFSRootElement.java,v 1.6 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSRootElement extends JFSElement {
 
@@ -62,7 +63,7 @@ public class JFSRootElement extends JFSElement {
 		srcFile = srcProducer.getRootJfsFile();
 		tgtFile = tgtProducer.getRootJfsFile();
 
-		// Assert root charateristics:
+		// Assert root characteristics:
 		assert srcFile != null && tgtFile != null;
 
 		// Test whether the file objects exists and are directories:
@@ -149,5 +150,23 @@ public class JFSRootElement extends JFSElement {
 	 * @see JFSElement#setActive(boolean)
 	 */
 	public void setActive(boolean isActive) {
+	}
+	
+	
+	/**
+	 *  Explicitly implement that the extra fields don't change equality. 
+	 */
+	@Override
+	public boolean equals(Object arg0) {
+		return (arg0 != null) && arg0 instanceof JFSRootElement
+				&& super.equals(arg0);
+	}
+
+	/**
+	 *  Explicitly implement that the extra field don't change the hash code. 
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode() + 23;
 	}
 }

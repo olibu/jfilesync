@@ -21,6 +21,8 @@ package jfs;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.swing.UIManager;
@@ -47,7 +49,7 @@ import jfs.sync.JFSTable;
  * @see jfs.gui.JFSMainView
  * @see JFSShell#startShell(boolean)
  * @author Jens Heidrich
- * @version $Id: JFileSync.java,v 1.40 2007/07/20 15:24:22 heidrich Exp $
+ * @version $Id: JFileSync.java,v 1.42 2009/10/08 08:02:08 heidrich Exp $
  */
 public class JFileSync {
 
@@ -74,7 +76,9 @@ public class JFileSync {
 			}
 
 			return jfsLibDir.getPath();
-		} catch (Exception e) {
+		} catch (URISyntaxException e) {
+			return ".";
+		} catch (MalformedURLException e) {
 			return ".";
 		}
 	}
@@ -95,7 +99,8 @@ public class JFileSync {
 		JFSConfig config = JFSConfig.getInstance();
 		PrintStream p = JFSLog.getOut().getStream();
 
-		// Clean config before starting (if main method is used as service):
+		// Clean configuration before starting (if main method is used as
+		// service):
 		config.clean();
 
 		boolean quiet = false;

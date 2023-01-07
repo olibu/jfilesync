@@ -26,6 +26,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,6 +36,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -44,9 +47,8 @@ import jfs.conf.JFSConst;
 import jfs.conf.JFSDirectoryPair;
 import jfs.conf.JFSSettings;
 import jfs.conf.JFSText;
-import jfs.sync.JFSFileProducer;
 import jfs.sync.JFSFileProducerManager;
-import jfs.sync.external.JFSExternalFileProducer;
+import jfs.sync.JFSUserAuthentication;
 
 /**
  * This dialog manages adding/changing directory pairs.
@@ -66,10 +68,10 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 	private JTextField tgtElement;
 
 	/** The source type combo box. */
-	private JComboBox srcTypeCombo;
+	private JComboBox<String> srcTypeCombo;
 
 	/** The target type combo box. */
-	private JComboBox tgtTypeCombo;
+	private JComboBox<String> tgtTypeCombo;
 
 	/** The configuration object to modify. */
 	private final JFSConfig config;
@@ -78,7 +80,7 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 	private final JFSDirectoryPair pair;
 
 	/**
-	 * Initializes the config view.
+	 * Initializes the configuration view.
 	 * 
 	 * @param dialog
 	 *            The main frame.
@@ -111,9 +113,10 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 		JLabel srcLabel = new JLabel(t.get("profile.dir"));
 		JLabel srcTypeLabel = new JLabel(t.get("profile.dir.type"));
 		srcElement = new JTextField(pair.getSrc(), 40);
-		srcTypeCombo = new JComboBox();
+		srcTypeCombo = new JComboBox<String>();
 		srcTypeCombo.addItem(t.get("profile.dir.scheme.local"));
 		srcTypeCombo.addItem(t.get("profile.dir.scheme.external"));
+		srcTypeCombo.addItem(t.get("profile.dir.scheme.vfs"));
 		JButton srcChangeButton = JFSSupport.getButton("button.change",
 				"button.change.src", this);
 		JPanel srcRow1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -127,21 +130,26 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 		srcRowPanel.setBorder(new TitledBorder(t.get("profile.dir.table.src")));
 		srcRowPanel.add(srcRow1Panel, BorderLayout.NORTH);
 		srcRowPanel.add(srcRow2Panel, BorderLayout.SOUTH);
-		JFSFileProducer srcFileProducer = fileProducerManager
-				.createProducer(pair.getSrc());
-		if (srcFileProducer.getScheme().equals(JFSConst.SCHEME_LOCAL)) {
-			srcTypeCombo.setSelectedIndex(0);
-		} else {
+		String srcScheme = fileProducerManager.getScheme(pair.getSrc());
+		for (String s : JFSConst.SCHEME_VFS) {
+			if (s.equals(srcScheme)) {
+				srcTypeCombo.setSelectedIndex(2);
+			}
+		}
+		if (srcScheme.equals(JFSConst.SCHEME_EXTERNAL)) {
 			srcTypeCombo.setSelectedIndex(1);
+		} else if (srcScheme.equals(JFSConst.SCHEME_LOCAL)) {
+			srcTypeCombo.setSelectedIndex(0);
 		}
 
 		// Create target row:
 		JLabel tgtLabel = new JLabel(t.get("profile.dir"));
 		JLabel tgtTypeLabel = new JLabel(t.get("profile.dir.type"));
 		tgtElement = new JTextField(pair.getTgt(), 40);
-		tgtTypeCombo = new JComboBox();
+		tgtTypeCombo = new JComboBox<String>();
 		tgtTypeCombo.addItem(t.get("profile.dir.scheme.local"));
 		tgtTypeCombo.addItem(t.get("profile.dir.scheme.external"));
+		tgtTypeCombo.addItem(t.get("profile.dir.scheme.vfs"));
 		JButton tgtChangeButton = JFSSupport.getButton("button.change",
 				"button.change.tgt", this);
 		JPanel tgtRow1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -155,12 +163,16 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 		tgtRowPanel.setBorder(new TitledBorder(t.get("profile.dir.table.tgt")));
 		tgtRowPanel.add(tgtRow1Panel, BorderLayout.NORTH);
 		tgtRowPanel.add(tgtRow2Panel, BorderLayout.SOUTH);
-		JFSFileProducer tgtFileProducer = fileProducerManager
-				.createProducer(pair.getTgt());
-		if (tgtFileProducer.getScheme().equals(JFSConst.SCHEME_LOCAL)) {
-			tgtTypeCombo.setSelectedIndex(0);
-		} else {
+		String tgtScheme = fileProducerManager.getScheme(pair.getTgt());
+		for (String s : JFSConst.SCHEME_VFS) {
+			if (s.equals(tgtScheme)) {
+				tgtTypeCombo.setSelectedIndex(2);
+			}
+		}
+		if (tgtScheme.equals(JFSConst.SCHEME_EXTERNAL)) {
 			tgtTypeCombo.setSelectedIndex(1);
+		} else if (tgtScheme.equals(JFSConst.SCHEME_LOCAL)) {
+			tgtTypeCombo.setSelectedIndex(0);
 		}
 
 		// Create source and target panel:
@@ -209,6 +221,9 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 		}
 
 		if (cmd.equals("button.change.src") || cmd.equals("button.change.tgt")) {
+			JFSFileProducerManager fileProducerManager = JFSFileProducerManager
+					.getInstance();
+
 			boolean isSource = true;
 			int type = srcTypeCombo.getSelectedIndex();
 
@@ -218,6 +233,7 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 			}
 
 			if (type == 0) {
+				// Deal with local files:
 				JFSSettings settings = JFSSettings.getInstance();
 
 				int returnVal;
@@ -260,10 +276,8 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 					}
 					JFSConfigView.createDirectoryDialog(this, directory);
 				}
-			} else {
-				// Create dialog:
-				JFSFileProducerManager fileProducerManager = JFSFileProducerManager
-						.getInstance();
+			} else if (type == 1) {
+				// Create dialog for external files:
 				String file = srcElement.getText();
 				if (!isSource) {
 					file = tgtElement.getText();
@@ -271,15 +285,17 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 				String hostStr = "localhost";
 				int portInt = JFSConfig.getInstance().getServerPort();
 				String dirStr = "/";
-				JFSFileProducer fileProducer = fileProducerManager
-						.createProducer(file);
-				if (fileProducer.getScheme().equals(JFSConst.SCHEME_EXTERNAL)) {
+				if (fileProducerManager.getScheme(file).equals(
+						JFSConst.SCHEME_EXTERNAL)) {
 					try {
-						JFSExternalFileProducer externalFileProducer = (JFSExternalFileProducer) fileProducer;
-						hostStr = externalFileProducer.getHost();
-						portInt = externalFileProducer.getPort();
-						dirStr = externalFileProducer.getOriginalRootPath();
-					} catch (ClassCastException e) {
+						URI fileUri = new URI(file);
+						hostStr = fileUri.getHost();
+						int readPort = fileUri.getPort();
+						if (readPort >= 0 && readPort <= 1000000) {
+							portInt = readPort;
+						}
+						dirStr = fileUri.getPath();
+					} catch (URISyntaxException e) {
 					}
 				}
 
@@ -322,12 +338,135 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 							.getNumber().intValue()) {
 						directory += ":" + port.getNumber();
 					}
-					directory += "/" + dir.getText();
+					directory += dir.getText();
 
 					if (isSource) {
 						srcElement.setText(directory);
 					} else {
 						tgtElement.setText(directory);
+					}
+				}
+			} else if (type == 2) {
+				// Create dialog for VFS files:
+				String file = srcElement.getText();
+				if (!isSource) {
+					file = tgtElement.getText();
+				}
+
+				// Get information from URI:
+				String scheme = "sftp";
+				String userName = "anonymous";
+				String password = "";
+				String host = "localhost";
+				int port = 0;
+				String path = "";
+				for (String s : JFSConst.SCHEME_VFS) {
+					if (s.equals(scheme)) {
+						try {
+							JFSUserAuthentication auth = JFSUserAuthentication
+									.getInstance();
+							auth.setResource(file);
+
+							URI fileUri = new URI(file);
+							scheme = fileProducerManager.getScheme(file);
+							userName = auth.getUriUserName();
+							password = auth.getUriPassword();
+							host = fileUri.getHost();
+							int readPort = fileUri.getPort();
+							if (readPort >= 0 && readPort <= 1000000) {
+								port = readPort;
+							}
+							path = fileUri.getPath();
+						} catch (URISyntaxException e) {
+						}
+					}
+				}
+
+				JComboBox<String> schemeCombo = new JComboBox<String>();
+				for (String s : JFSConst.SCHEME_VFS) {
+					schemeCombo.addItem(s);
+				}
+				schemeCombo.setSelectedItem(scheme);
+
+				JLabel userNameLabel = new JLabel(t
+						.get("userAuthenticationView.userName"));
+				JTextField userNameField = new JTextField(userName, 10);
+
+				JLabel passwordLabel = new JLabel(t
+						.get("userAuthenticationView.password"));
+				JPasswordField passwordField = new JPasswordField(password, 10);
+
+				JLabel hostLabel = new JLabel(t.get("profile.server.host"));
+				JTextField hostField = new JTextField(host, 20);
+
+				JLabel portLabel = new JLabel(t.get("profile.server.port"));
+				SpinnerNumberModel portNumber = new SpinnerNumberModel(port, 0,
+						1000000, 1);
+				JSpinner portSpinner = new JSpinner(portNumber);
+
+				JLabel pathLabel = new JLabel(t.get("profile.server.dir"));
+				JTextField pathField = new JTextField(path, 20);
+
+				JPanel row1Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row1Panel.add(schemeCombo);
+
+				JPanel row2Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row2Panel.add(userNameLabel);
+				row2Panel.add(userNameField);
+
+				JPanel row3Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row3Panel.add(passwordLabel);
+				row3Panel.add(passwordField);
+
+				JPanel row4Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row4Panel.add(hostLabel);
+				row4Panel.add(hostField);
+
+				JPanel row5Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row5Panel.add(portLabel);
+				row5Panel.add(portSpinner);
+
+				JPanel row6Panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				row6Panel.add(pathLabel);
+				row6Panel.add(pathField);
+
+				JPanel panel = new JPanel(new GridLayout(6, 1));
+				panel.add(row1Panel);
+				panel.add(row2Panel);
+				panel.add(row3Panel);
+				panel.add(row4Panel);
+				panel.add(row5Panel);
+				panel.add(row6Panel);
+
+				int result = JOptionPane.showConfirmDialog(this, panel, t
+						.get("profile.server.title"),
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.WARNING_MESSAGE);
+
+				if (result == JOptionPane.OK_OPTION) {
+					String uri = schemeCombo.getSelectedItem() + "://";
+					if (!hostField.getText().trim().equals("")) {
+						if (!userNameField.getText().trim().equals("")) {
+							uri += userNameField.getText();
+							if (passwordField.getPassword().length > 0) {
+								uri += ":"
+										+ new String(passwordField
+												.getPassword());
+							}
+							uri += "@";
+						}
+
+						uri += hostField.getText();
+						if (portNumber.getNumber().intValue() > 0) {
+							uri += ":" + portNumber.getNumber().intValue();
+						}
+					}
+					uri += pathField.getText();
+
+					if (isSource) {
+						srcElement.setText(uri);
+					} else {
+						tgtElement.setText(uri);
 					}
 				}
 			}

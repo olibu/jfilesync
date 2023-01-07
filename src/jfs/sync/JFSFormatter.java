@@ -27,9 +27,11 @@ import java.util.Date;
  * Provides static methods in order to format numbers.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSFormatter.java,v 1.2 2007/02/26 18:49:09 heidrich Exp $
+ * @version $Id: JFSFormatter.java,v 1.3 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSFormatter {
+
+	private static DateFormat dateTimeInstance;
 
 	/**
 	 * Returns the length of the file as a string if the JFSFile is not a
@@ -57,10 +59,22 @@ public class JFSFormatter {
 		if (length < 1000) {
 			return length + " b";
 		} else if (length / 1024 < 1000) {
-			return ((double) (length * 10 / 1024) / 10) + " KB";
+			return ((length * 10 / 1024) / (double)10) + " KiB";
 		} else {
-			return ((double) (length * 100 / 1048576) / 100) + " MB";
+			return ((length * 100 / 1048576) / (double)100) + " MiB";
 		}
+	}
+	
+	/**
+	 * Returns the DateFormat instance that can be re-used for date formatting. 
+	 * 
+	 * @return The DateFormat instance.
+	 */
+	public static DateFormat getDateTimeInstance() {
+		if (dateTimeInstance == null)
+			dateTimeInstance = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+					DateFormat.SHORT);
+		return dateTimeInstance; 
 	}
 
 	/**
@@ -72,9 +86,7 @@ public class JFSFormatter {
 		if (file.isDirectory())
 			return "";
 
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
-				DateFormat.SHORT);
-		return df.format(new Date(file.getLastModified()));
+		return getDateTimeInstance().format(new Date(file.getLastModified()));
 	}
 
 	/**

@@ -38,7 +38,7 @@ import jfs.conf.JFSText;
  * server.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSServerAccess.java,v 1.18 2007/07/20 12:27:52 heidrich Exp $
+ * @version $Id: JFSServerAccess.java,v 1.20 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSServerAccess extends Thread {
 
@@ -104,7 +104,8 @@ public class JFSServerAccess extends Thread {
 	 */
 	private synchronized void checkSocket() throws UnknownHostException,
 			IOException {
-		int timeout = JFSConfig.getInstance().getServerTimeout();
+		// Use half of the server time out for client:
+		int timeout = JFSConfig.getInstance().getServerTimeout() / 2;
 
 		if (socket == null || !socket.isConnected() || socket.isClosed()
 				|| !socket.isBound() || socket.isInputShutdown()
@@ -125,7 +126,11 @@ public class JFSServerAccess extends Thread {
 					ObjectInputStream oi = new ObjectInputStream(in);
 					// Read boolean from stream (even if currently not used):
 					((Boolean) oi.readObject()).booleanValue();
-				} catch (Exception e) {
+				} catch (IOException e) {
+					closeSocket();
+					socket = new Socket(host, port);
+					socket.setSoTimeout(timeout);
+				} catch (ClassNotFoundException e) {
 					closeSocket();
 					socket = new Socket(host, port);
 					socket.setSoTimeout(timeout);
@@ -150,7 +155,7 @@ public class JFSServerAccess extends Thread {
 				socket.shutdownInput();
 				socket.shutdownOutput();
 				socket.close();
-			} catch (Exception e) {
+			} catch (IOException e) {
 				JFSLog.getErr().getStream().println(
 						JFSText.getInstance().get("error.external") + " " + e);
 			}
@@ -185,7 +190,12 @@ public class JFSServerAccess extends Thread {
 			releaseSocket();
 
 			return info;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			JFSLog.getErr().getStream().println(
+					JFSText.getInstance().get("error.external") + " " + e);
+
+			return null;
+		} catch (ClassNotFoundException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -220,7 +230,12 @@ public class JFSServerAccess extends Thread {
 			releaseSocket();
 
 			return b;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			JFSLog.getErr().getStream().println(
+					JFSText.getInstance().get("error.external") + " " + e);
+
+			return false;
+		} catch (ClassNotFoundException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -262,7 +277,7 @@ public class JFSServerAccess extends Thread {
 			InputStream in = socket.getInputStream();
 
 			return in;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -309,7 +324,12 @@ public class JFSServerAccess extends Thread {
 			}
 
 			return out;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			JFSLog.getErr().getStream().println(
+					JFSText.getInstance().get("error.external") + " " + e);
+
+			return null;
+		} catch (ClassNotFoundException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -345,9 +365,10 @@ public class JFSServerAccess extends Thread {
 			InputStream in = socket.getInputStream();
 			ObjectInputStream oi = new ObjectInputStream(in);
 			JFSFileInfo serverInfo = ((JFSFileInfo) oi.readObject());
-			boolean b = serverInfo.exists();
-
+			boolean b = false;
+			
 			if (serverInfo != null) {
+				b = serverInfo.exists();
 				info.setName(serverInfo.getName());
 				info.setPath(serverInfo.getPath());
 				info.setRootPath(serverInfo.getRootPath());
@@ -357,7 +378,12 @@ public class JFSServerAccess extends Thread {
 			releaseSocket();
 
 			return b;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			JFSLog.getErr().getStream().println(
+					JFSText.getInstance().get("error.external") + " " + e);
+
+			return false;
+		} catch (ClassNotFoundException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -396,7 +422,12 @@ public class JFSServerAccess extends Thread {
 			releaseSocket();
 
 			return b;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			JFSLog.getErr().getStream().println(
+					JFSText.getInstance().get("error.external") + " " + e);
+
+			return false;
+		} catch (ClassNotFoundException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 
@@ -419,7 +450,7 @@ public class JFSServerAccess extends Thread {
 			oo.writeObject(t);
 
 			releaseSocket();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			JFSLog.getErr().getStream().println(
 					JFSText.getInstance().get("error.external") + " " + e);
 		}
@@ -428,13 +459,14 @@ public class JFSServerAccess extends Thread {
 	/**
 	 * Cancels the current access and closes sockets.
 	 */
+	//FIXME: Is it correct that this is not synchronized?
 	public void cancel() {
 		if (socket != null) {
 			try {
 				socket.shutdownInput();
 				socket.shutdownOutput();
 				socket.close();
-			} catch (Exception e) {
+			} catch (IOException e) {
 			}
 		}
 	}

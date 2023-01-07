@@ -1,5 +1,5 @@
-JFileSync, Version 2.2
-Copyright (C) 2002-2007, Jens Heidrich
+JFileSync, Version 2.3 Alpha
+Copyright (C) 2002-2013, Jens Heidrich
 
 Release Notes
 
@@ -56,7 +56,7 @@ You can find a copy all licenses of JFileSync and the used libraries in the
 
 3) Requirements
 
-- Java 5 Runtime Environment >= 1.5.0 (see 'http://java.sun.com')
+- Java 7 Runtime Environment >= 1.7.0 (see 'http://java.sun.com')
 
 
 4) Installation and Application Start
@@ -102,11 +102,11 @@ You can find a copy all licenses of JFileSync and the used libraries in the
 6) Development Notes
 
 Required packages for JFileSync development (not included in the distribution):
-- Java 5 SDK >= 1.5.0 (see 'http://java.sun.com')
+- Java 7 SDK >= 1.7.0 (see 'http://java.sun.com')
 - Apache Ant >= 1.6.2 (see 'http://ant.apache.org')
 
 Used and therewith recommended development tools:
-- Java 5 SDK 1.5.0
+- Java 7 SDK 1.7.0
 - Apache Ant 1.6.2
 - Eclipse 3.1.0
 

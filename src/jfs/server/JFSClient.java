@@ -46,7 +46,7 @@ import jfs.conf.JFSText;
  * certain action was performed successfully.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSClient.java,v 1.15 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSClient.java,v 1.16 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSClient extends Thread {
 
@@ -82,6 +82,8 @@ public class JFSClient extends Thread {
 				}
 			} catch (SocketTimeoutException e) {
 				JFSLog.getOut().getStream().println(t.get("error.timeout"));
+			} catch (ClassNotFoundException e) {
+				JFSLog.getOut().getStream().println(t.get("error.external") + " " + e);
 			}
 			server.getSockets().remove(socket);
 			socket.shutdownInput();
@@ -92,7 +94,7 @@ public class JFSClient extends Thread {
 		} catch (EOFException e) {
 			// Ignore end-of-file exceptions thrown, when the JFS client is
 			// shut down before the client socket on server side terminates.
-		} catch (Exception e) {
+		} catch (IOException e) {
 			JFSLog.getErr().getStream().println(
 					t.get("error.external") + " " + e);
 		}
@@ -151,7 +153,7 @@ public class JFSClient extends Thread {
 							+ info.getVirtualPath());
 			success = info.updateFileSystem();
 			oo = new ObjectOutputStream(out);
-			oo.writeObject(new Boolean(success));
+			oo.writeObject(success);
 
 			break;
 
@@ -173,8 +175,11 @@ public class JFSClient extends Thread {
 							+ info.getVirtualPath());
 			file = info.complete();
 
-			if (file.exists())
-				file.delete();
+			if (file.exists()) {
+				if (!file.delete()) {
+					throw new IOException("Unable to delete file: " + file.getAbsolutePath());
+				}
+			}
 
 			oo = new ObjectOutputStream(out);
 			oo.writeObject(info);
@@ -186,12 +191,16 @@ public class JFSClient extends Thread {
 			// Updates the file system; that is sets last modified and can
 			// write property:
 			if (!success) {
-				file.delete();
+				if (!file.delete()) {
+					throw new IOException("Unable to delete file: " + file.getAbsolutePath());
+				}
 			} else {
 				if (!info.updateFileSystem()) {
 					JFSLog.getOut().getStream().println(
 							text.get("error.update"));
-					file.delete();
+					if (!file.delete()) {
+						throw new IOException("Unable to delete file: " + file.getAbsolutePath());
+					}
 				}
 			}
 
@@ -226,14 +235,14 @@ public class JFSClient extends Thread {
 				success = file.delete();
 
 			oo = new ObjectOutputStream(out);
-			oo.writeObject(new Boolean(success));
+			oo.writeObject(success);
 
 			break;
 
 		case JFSTransmission.CMD_IS_ALIVE:
 			JFSLog.getOut().getStream().println(text.get("cmd.server.isAlive"));
 			oo = new ObjectOutputStream(out);
-			oo.writeObject(new Boolean(true));
+			oo.writeObject(true);
 
 			break;
 

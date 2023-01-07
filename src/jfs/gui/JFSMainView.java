@@ -32,6 +32,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -73,12 +74,13 @@ import jfs.server.JFSServerFactory;
 import jfs.sync.JFSProgress;
 import jfs.sync.JFSSynchronization;
 import jfs.sync.JFSTable;
+import jfs.sync.JFSUserAuthentication;
 
 /**
  * This class represents the main Java Swing frame of the JFS application.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSMainView.java,v 1.39 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSMainView.java,v 1.41 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSMainView extends WindowAdapter implements ActionListener,
 		ComponentListener, JFSConfigObserver, JFSLogObserver {
@@ -131,6 +133,9 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 	/** The used assistant view. */
 	private JFSAssistantView assistantView = null;
 
+	/** The check box indicating whether file icons should be shown or not. */
+	private JCheckBoxMenuItem viewFileIconsItem;
+
 	/**
 	 * Start the application with a certain task object.
 	 * 
@@ -146,8 +151,13 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 			config.loadDefaultFile();
 
 		// Redirect error stream to log file:
-		JFSLog.getErr().resetLogFile();
-		JFSLog.getOut().resetLogFile();
+		try {
+			JFSLog.getErr().resetLogFile();
+			JFSLog.getOut().resetLogFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// Initialize attributes:
 		frame = new JFrame();
@@ -215,6 +225,9 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 					.getAlias(), "VIEW_" + mode.getId(), view == mode.getId(),
 					this));
 		}
+		viewMenu.addSeparator();
+		viewFileIconsItem = JFSSupport.getCheckBoxMenuItem("view.fileIcons", "menu.fileIcons", config.isShowFileIcons(), this);
+		viewMenu.add(viewFileIconsItem);
 
 		// Create mode menu:
 		syncGroup = new ButtonGroup();
@@ -259,7 +272,7 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 		helpMenu.addSeparator();
 		helpMenu.add(JFSSupport.getMenuItem("menu.info", "INFO", this));
 
-		// Add menues to menu bar:
+		// Add menus to menu bar:
 		menubar.add(fileMenu);
 		menubar.add(viewMenu);
 		menubar.add(modeMenu);
@@ -339,6 +352,8 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 
 		// Register at configuration object, question view, and error log:
 		config.attach(this);
+		JFSUserAuthentication.getInstance().setUserInterface(
+				new JFSUserAuthenticationView(this));
 		JFSSynchronization.getInstance().getQuestion().setOracle(
 				new JFSQuestionView(this));
 		JFSLog.getErr().attach(this);
@@ -586,8 +601,13 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 				s.clean();
 				config.clean();
 				config.fireUpdate();
-				JFSLog.getErr().resetLogFile();
-				JFSLog.getOut().resetLogFile();
+				try {
+					JFSLog.getErr().resetLogFile();
+					JFSLog.getOut().resetLogFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				frame.setBounds(s.getWindowX(), s.getWindowY(), s
 						.getWindowWidth(), s.getWindowHeight());
 				frame.setExtendedState(s.getWindowState());
@@ -604,7 +624,11 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 
 			if (result == JOptionPane.OK_OPTION) {
 				// Store last entered profile data:
-				config.storeDefaultFile();
+				try {
+					config.storeDefaultFile();
+				} catch (IOException e) {
+					System.err.println(e.getLocalizedMessage());
+				}
 
 				// Store settings:
 				s.store();
@@ -643,6 +667,13 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 
 		if (cmd.equals("HISTORY")) {
 			new JFSHistoryManagerView(this.getFrame());
+		}
+		
+		if (cmd.equals("menu.fileIcons")) {
+			boolean newState = viewFileIconsItem.isSelected();
+			config.setShowFileIcons(newState);
+			//Redraw the table with or without the icons
+			syncTable.repaint();
 		}
 	}
 

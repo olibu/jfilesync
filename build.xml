@@ -2,7 +2,7 @@
 
 	<description>
 		JFileSync
-		Copyright (C) 2002-2007, Jens Heidrich
+		Copyright (C) 2002-2013, Jens Heidrich
 
 		This program is free software; you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -68,7 +68,14 @@
 	<target name="compile" depends="init">
 		<description>Compiles the sources</description>
 		<mkdir dir="${build}" />
-		<javac srcdir="${src}" destdir="${build}" target="1.5">
+		<path id="compile.cp">
+			<fileset dir="${dist}">
+				<include name="*.jar" />
+				<exclude name="jfs.jar" />
+			</fileset>
+		</path>
+		<javac srcdir="${src}" destdir="${build}" target="1.7">
+			<classpath refid="compile.cp" />
 			<include name="jfs/**" />
 			<compilerarg value="-Xlint:unchecked" />
 		</javac>
@@ -85,6 +92,7 @@
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="jfs.JFileSync" />
+				<attribute name="Class-Path" value="commons-vfs-1.0.jar commons-logging-1.1.1.jar jsch-0.1.38.jar" />
 			</manifest>
 			<fileset dir="${build}" />
 			<fileset dir="${src}" includes="jfs/resources/**" />
@@ -110,6 +118,7 @@
 		<description>Tests the JFS application</description>
 		<input message="Enter parameters:" addproperty="parameters" />
 		<java jar="${dist}/jfs.jar" fork="true">
+			<jvmarg line="-Xmx512m" />
 			<sysproperty key="user.home" path="." />
 			<sysproperty key="user.language" value="en" />
 			<sysproperty key="user.region" path="US" />

@@ -29,7 +29,7 @@ import jfs.conf.JFSConst;
  * hash map using the plugin's identifier as key.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSPluginRepository.java,v 1.11 2007/02/26 18:49:10 heidrich Exp $
+ * @version $Id: JFSPluginRepository.java,v 1.12 2009/10/08 08:19:53 heidrich Exp $
  */
 public class JFSPluginRepository {
 
@@ -53,6 +53,7 @@ public class JFSPluginRepository {
 						.newInstance();
 				plugins.put(plugin.getId(), plugin);
 			} catch (Exception e) {
+				//don't propagate exceptions thrown by plug-ins to the core
 			}
 		}
 	}

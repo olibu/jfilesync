@@ -35,7 +35,7 @@ import jfs.sync.JFSProgress;
  * information.
  * 
  * @author Jens Heidrich
- * @version $Id: JFSExternalFile.java,v 1.10 2007/07/20 12:27:52 heidrich Exp $
+ * @version $Id: JFSExternalFile.java,v 1.11 2009/10/02 08:21:19 heidrich Exp $
  */
 public class JFSExternalFile extends JFSFile {
 
@@ -109,6 +109,13 @@ public class JFSExternalFile extends JFSFile {
 	 */
 	public boolean canRead() {
 		return info.canRead();
+	}
+
+	/**
+	 * @see JFSFile#canRead()
+	 */
+	public boolean canExecute() {
+		return info.canExecute ();
 	}
 
 	/**
@@ -248,6 +255,17 @@ public class JFSExternalFile extends JFSFile {
 		return true;
 	}
 
+	public boolean setExecutable ()
+	{
+		if (!JFSConfig.getInstance().isSetExecutable ()) {
+			return true;
+		}
+
+		info.setExecutable ( true );
+
+		return true;
+	}
+
 	/**
 	 * @see JFSFile#setReadOnly()
 	 */
@@ -271,6 +289,8 @@ public class JFSExternalFile extends JFSFile {
 			info.setLength(srcFile.getLength());
 			if (!srcFile.canWrite())
 				info.setReadOnly();
+			if(srcFile.canExecute ())
+				info.setExecutable ( true );
 		}
 
 		return true;
