@@ -80,6 +80,29 @@ public abstract class JFSSettings {
 	protected ArrayList<File> lastOpenedProfiles = new ArrayList<File>(
 			JFSConst.LAST_OPENED_PROFILES_SIZE);
 
+	/** Should the dialog be shown on exit **/
+	protected boolean isAskOnExit = true;
+	
+	/** Executeable for file compare **/
+	protected String compareProgram = null;
+	
+	/** The time difference to ignore when comparing files **/
+	protected long ignoreTimeDiff = 0;
+
+    /** The JFileSync diffDialog's X coordinate. */
+    protected int diffDialogX;
+
+    /** The JFileSync diffDialog's Y coordinate. */
+    protected int diffDialogY;
+
+    /** The JFileSync diffDialog's width. */
+    protected int diffDialogWidth;
+
+    /** The JFileSync diffDialog's height. */
+    protected int diffDialogHeight;
+
+    protected boolean autoCompare = false;
+	
 	/**
 	 * Sets some default values for the settings object and loads the settings
 	 * file from the standard location.
@@ -117,6 +140,12 @@ public abstract class JFSSettings {
 		laf = UIManager.getSystemLookAndFeelClassName();
 		currentProfile = null;
 		lastOpenedProfiles.clear();
+		isAskOnExit = JFSConst.ASK_ON_EXIT;
+		compareProgram = null;
+		diffDialogX = JFSConst.WINDOW_X;
+		diffDialogY = JFSConst.WINDOW_Y;
+		diffDialogWidth = JFSConst.WINDOW_WIDTH;
+		diffDialogHeight = JFSConst.WINDOW_HEIGHT;
 
 		// Set the look and feel when the settings object is cleaned:
 		if (!nogui) {
@@ -448,5 +477,122 @@ public abstract class JFSSettings {
 	 */
 	public ArrayList<File> getLastOpenedProfiles() {
 		return lastOpenedProfiles;
+	}
+	
+	/**
+	 * TODO: comment
+	 * @return
+	 */
+	public boolean isAskOnExit() {
+		return isAskOnExit;
+	}
+
+	/**
+	 * TODO: comment
+	 * @param isAskOnExit
+	 */
+	public void setAskOnExit(boolean isAskOnExit) {
+		this.isAskOnExit = isAskOnExit;
+	}
+
+	/**
+	 * Returns the path to the executable for file compare.
+	 * 
+	 * @return Path to the compare program. Will be null if the property is not set.
+	 */
+	public String getCompareProgram() {
+		return compareProgram;
+	}
+
+	/**
+	 * Set the path to the executable for file compare.
+	 * @param compareProgram Path to the compare excutable.
+	 */
+	public void setCompareProgram(String compareProgram) {
+		this.compareProgram = compareProgram;
+	}
+
+	public long getIgnoreTimeDiff()
+	{
+		// TODO Auto-generated method stub
+		return ignoreTimeDiff;
+	}
+	
+	/**
+	 * The exact time in msec to ignore when comparing files.
+	 * <p>
+	 * This is important if a time difference between summer
+	 * and winter time occurs.
+	 * 
+	 * @param ignoreTimeDiff
+	 */
+	public void setIgnoreTimeDiff(long ignoreTimeDiff)
+	{
+		this.ignoreTimeDiff = ignoreTimeDiff;
+	}
+
+	   /**
+     * Returns the X coordinate for the JFS main window.
+     * 
+     * @return The X coordinate.
+     */
+    public final int getDiffDialogX() {
+        return diffDialogX;
+    }
+
+    /**
+     * Returns the Y coordinate for the JFS main window.
+     * 
+     * @return The Y coordinate.
+     */
+    public final int getDiffDialogY() {
+        return diffDialogY;
+    }
+
+    /**
+     * Returns the width for the JFS main window.
+     * 
+     * @return The width.
+     */
+    public final int getDiffDialogWidth() {
+        return diffDialogWidth;
+    }
+
+    /**
+     * Returns the height for the JFS main window.
+     * 
+     * @return The height.
+     */
+    public final int getDiffDialogHeight() {
+        return diffDialogHeight;
+    }
+
+   /**
+     * Sets the bounds to store for the Diff Dialog.
+     * 
+     * @param x
+     *            X coordinate.
+     * @param y
+     *            Y coordinate.
+     * @param width
+     *            Width.
+     * @param height
+     *            Height.
+     */
+    public final void setDiffDialogBounds(int x, int y, int width, int height) {
+        diffDialogX = x;
+        diffDialogY = y;
+        diffDialogWidth = width;
+        diffDialogHeight = height;
+    }
+
+	public boolean isAutoCompare()
+	{
+	    return autoCompare;
+	}
+	
+	public void setAutoCompare(boolean b)
+	{
+	    autoCompare = b;
 	}
 }

@@ -92,7 +92,7 @@ public abstract class JFSConfig implements Cloneable {
 
 	/** Vector with all oberservers of the configuration object. */
 	protected Vector<JFSConfigObserver> observers = new Vector<JFSConfigObserver>();
-
+	
 	/**
 	 * Sets some default values for the configuration object.
 	 */

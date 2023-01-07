@@ -180,7 +180,8 @@ public class JFSConfigServerView extends JDialog implements ActionListener {
 		}
 
 		if (cmd.equals("BROWSE")) {
-			int returnVal;
+			/*
+            int returnVal;
 			JFileChooser chooser = new JFileChooser(base.getText());
 			chooser.setApproveButtonText(t.get("button.select"));
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -193,6 +194,14 @@ public class JFSConfigServerView extends JDialog implements ActionListener {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				base.setText(chooser.getSelectedFile().getPath());
 			}
+			*/
+            String selFile = UIHelper.showOpenDialog(this, base.getText(), true, t.get("profile.server.getBase"), t.getLocale(), null, UIHelper.TYPE_OPEN, t.get("button.select"));
+            //chooser.setApproveButtonText(t.get("button.select"));
+
+            // If not canceled, get target file:
+            if (selFile != null) {
+                base.setText(selFile);
+            }
 		}
 	}
 }

@@ -78,6 +78,18 @@ class JFSSettingsXML extends JFSSettings {
 						windowWidth = Integer.parseInt(attr.getValue());
 						attr = ((Element) child).getAttributeNode("height");
 						windowHeight = Integer.parseInt(attr.getValue());
+						attr = ((Element) child).getAttributeNode("askonexit");
+						if (attr != null) {
+							setAskOnExit(Boolean.valueOf(attr.getValue()).booleanValue());
+						}
+                        attr = ((Element) child).getAttributeNode("ignoreTimeDiff");
+                        if (attr != null) {
+                            setIgnoreTimeDiff(Long.valueOf(attr.getValue()).longValue());
+                        }
+                        attr = ((Element) child).getAttributeNode("autoCompare");
+                        if (attr != null) {
+                            setAutoCompare(Boolean.valueOf(attr.getValue()).booleanValue());
+                        }
 					} catch (NumberFormatException e) {
 						// Thrown by parseInt() and parseByte(). Continue in
 						// this case.
@@ -102,6 +114,7 @@ class JFSSettingsXML extends JFSSettings {
 					attr = ((Element) child).getAttributeNode("class");
 					setLaf(attr.getValue());
 				}
+
 
 				if (child.getNodeName().equals("currentProfile")) {
 					attr = ((Element) child).getAttributeNode("path");
@@ -138,11 +151,43 @@ class JFSSettingsXML extends JFSSettings {
 					}
 				}
 
-				child = child.getNextSibling();
+				if (child.getNodeName().equals("compare")) {
+					Element element = (Element) child;
+					Attr src = element.getAttributeNode("path");
+
+					if (src != null) {
+						setCompareProgram(src.getValue());
+					}
+					else
+					{
+                        setCompareProgram("internal");
+					}
+				}
+
+                if (child.getNodeName().equals("diffdialog")) {
+                    try {
+                        attr = ((Element) child).getAttributeNode("x");
+                        diffDialogX = Integer.parseInt(attr.getValue());
+                        attr = ((Element) child).getAttributeNode("y");
+                        diffDialogY = Integer.parseInt(attr.getValue());
+                        attr = ((Element) child).getAttributeNode("width");
+                        diffDialogWidth = Integer.parseInt(attr.getValue());
+                        attr = ((Element) child).getAttributeNode("height");
+                        diffDialogHeight = Integer.parseInt(attr.getValue());
+                    } catch (NumberFormatException e) {
+                        // Thrown by parseInt() and parseByte(). Continue in
+                        // this case.
+                        JFSLog.getErr().getStream().println(
+                                t.get("error.numberFormat"));
+                    }
+                }
+
+                child = child.getNextSibling();
 			}
 
 			// Sort histories after reading all from file:
 			hm.sortHistories();
+
 		} catch (Exception e) {
 			JFSLog.getErr().getStream().println(t.get("error.xml.load"));
 		}
@@ -180,8 +225,21 @@ class JFSSettingsXML extends JFSSettings {
 			element.setAttribute("y", String.valueOf(windowY));
 			element.setAttribute("width", String.valueOf(windowWidth));
 			element.setAttribute("height", String.valueOf(windowHeight));
+			element.setAttribute("askonexit", String.valueOf(isAskOnExit));
+            element.setAttribute("ignoreTimeDiff", String.valueOf(ignoreTimeDiff));
+            element.setAttribute("autoCompare", String.valueOf(autoCompare));
+	
 			root.appendChild(doc.createTextNode("\n  "));
 			root.appendChild(element);
+
+            element = doc.createElement("diffdialog");
+            element.setAttribute("x", String.valueOf(diffDialogX));
+            element.setAttribute("y", String.valueOf(diffDialogY));
+            element.setAttribute("width", String.valueOf(diffDialogWidth));
+            element.setAttribute("height", String.valueOf(diffDialogHeight));
+			
+            root.appendChild(doc.createTextNode("\n  "));
+            root.appendChild(element);
 
 			element = doc.createElement("directories");
 			element.setAttribute("profile", lastProfileDir.getPath());
@@ -222,6 +280,15 @@ class JFSSettingsXML extends JFSSettings {
 					root.appendChild(element);
 				}
 			}
+
+			root.appendChild(doc.createTextNode("\n  "));
+
+			element = doc.createElement("compare");
+			if (getCompareProgram()!=null)
+			{
+				element.setAttribute("path", getCompareProgram());
+			}
+			root.appendChild(element);
 
 			root.appendChild(doc.createTextNode("\n"));
 

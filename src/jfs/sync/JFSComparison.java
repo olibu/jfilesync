@@ -20,9 +20,12 @@
 package jfs.sync;
 
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jfs.conf.JFSConfig;
 import jfs.conf.JFSDirectoryPair;
+import jfs.conf.JFSSettings;
 import jfs.sync.JFSProgress.ProgressActivity;
 
 /**
@@ -32,6 +35,7 @@ import jfs.sync.JFSProgress.ProgressActivity;
  * @version $Id: JFSComparison.java,v 1.31 2007/07/18 16:20:49 heidrich Exp $
  */
 public class JFSComparison {
+    private final Logger logger = Logger.getLogger(JFSComparison.class.getName());
 
 	/** Stores the only instance of the class. */
 	private static JFSComparison instance = null;
@@ -128,9 +132,11 @@ public class JFSComparison {
 		while (srcIndex < srcFiles.length && tgtIndex < tgtFiles.length) {
 			int comp = srcFiles[srcIndex].compareTo(tgtFiles[tgtIndex]);
 
+
 			if (comp == 0) {
 				// Case 1: We found two matching files:
 				add(srcFiles[srcIndex], tgtFiles[tgtIndex], parent, isDirectory);
+	                  logger.log(Level.FINE, "Compare file (1): " + srcFiles[srcIndex].relativePath);
 				srcIndex++;
 				tgtIndex++;
 			} else if (comp > 0) {
@@ -139,6 +145,7 @@ public class JFSComparison {
 				// the target file to the comparison table and investigate the
 				// next target file in the list:
 				add(null, tgtFiles[tgtIndex], parent, isDirectory);
+				logger.log(Level.FINE, "Compare file (2): " + tgtFiles[tgtIndex].relativePath);
 				tgtIndex++;
 			} else if (comp < 0) {
 				// Case 3: No matching file was found and the target file is
@@ -146,6 +153,7 @@ public class JFSComparison {
 				// the source file to the comparison table and investigate the
 				// next source file in the list:
 				add(srcFiles[srcIndex], null, parent, isDirectory);
+                logger.log(Level.FINE, "Compare file (3): " + srcFiles[srcIndex].relativePath);
 				srcIndex++;
 			}
 		}
@@ -154,6 +162,7 @@ public class JFSComparison {
 		// to write the rest of the target files into the table:
 		while (tgtIndex < tgtFiles.length) {
 			add(null, tgtFiles[tgtIndex], parent, isDirectory);
+            logger.log(Level.FINE, "Compare file (4): " + tgtFiles[tgtIndex].relativePath);
 			tgtIndex++;
 		}
 
@@ -161,6 +170,7 @@ public class JFSComparison {
 		// to write the rest of the source files into the table:
 		while (srcIndex < srcFiles.length) {
 			add(srcFiles[srcIndex], null, parent, isDirectory);
+            logger.log(Level.FINE, "Compare file (5): " + srcFiles[srcIndex].relativePath);
 			srcIndex++;
 		}
 	}
@@ -208,6 +218,13 @@ public class JFSComparison {
 		monitor.increase(srcDirectoryList.length + tgtDirectoryList.length,
 				weight);
 		progress.fireUpdate();
+
+	      if (srcDir!=null) {
+	          logger.log(Level.FINE, "Compare directory (1): " + srcDir.relativePath);
+	      }
+	      else if (tgtDir!=null) {
+	          logger.log(Level.FINE, "Compare directory (2): " + tgtDir.relativePath);
+	      }
 
 		compareFiles(srcFileList, tgtFileList, parent, false);
 		compareFiles(srcDirectoryList, tgtDirectoryList, parent, true);

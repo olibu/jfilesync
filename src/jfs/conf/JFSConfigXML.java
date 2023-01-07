@@ -103,6 +103,9 @@ class JFSConfigXML extends JFSConfig {
 
 				if (attr != null)
 					setCanWrite(Boolean.valueOf(attr.getValue()).booleanValue());
+
+				attr = root.getAttributeNode("askonexit");
+
 			} catch (NumberFormatException e) {
 				// Thrown by parseInt() and parseByte(). Continue in this case.
 				JFSLog.getErr().getStream()
@@ -246,6 +249,7 @@ class JFSConfigXML extends JFSConfig {
 			if (isSetCanWrite() != JFSConst.SET_CAN_WRITE)
 				root.setAttribute("setcanwrite", String
 						.valueOf(isSetCanWrite()));
+
 
 			// Add server settings if not equal to default:
 			if ((serverPort != JFSConst.SERVER_PORT)

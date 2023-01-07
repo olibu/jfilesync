@@ -180,6 +180,9 @@ Options:
              java -cp <JFS library><separator><LaF library>
                jfs.JFileSync -laf <LaF class>
 
+  -compare 
+           Directly start compare action after GUI is visible
+  
   -help, -?
            Displays this command line help message.
 

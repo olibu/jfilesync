@@ -398,6 +398,7 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 
 				if (cmd.equals("OPEN")) {
 					File last = s.getLastProfileDir();
+					/* old open dialog
 					JFileChooser chooser = new JFileChooser(last);
 					JFSConfigFileFilter filter = new JFSConfigFileFilter();
 					chooser.setFileFilter(filter);
@@ -416,6 +417,30 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 							actionPerformed("NEW");
 						}
 					}
+					*/
+                    JFSConfigFileFilter filter = new JFSConfigFileFilter();
+					String fileS = UIHelper.showOpenDialog(frame, last.getAbsolutePath(), false, t.get("menu.open"), t.getLocale(), filter, UIHelper.TYPE_OPEN, null);
+                    if (fileS != null) {
+                        File file = new File(fileS);
+                        s.setLastProfileDir(file.getParentFile());
+                        // Show error message if opening failed:
+                        if (!config.load(file)) {
+                            JLabel label = new JLabel(t
+                                    .get("error.profile.load"));
+                            JOptionPane.showMessageDialog(frame, label, t
+                                    .get("error.window.title"),
+                                    JOptionPane.ERROR_MESSAGE);
+                            actionPerformed("NEW");
+                        }
+                        else
+                        {
+                            if (JFSSettings.getInstance().isAutoCompare())
+                            {
+                                actionPerformed("COMPARE");
+                            }
+                        }
+                    }
+					
 					updateLastOpenedProfiles();
 				}
 
@@ -430,6 +455,13 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 								JOptionPane.ERROR_MESSAGE);
 						actionPerformed("NEW");
 					}
+                    else
+                    {
+                        if (JFSSettings.getInstance().isAutoCompare())
+                        {
+                            actionPerformed("COMPARE");
+                        }
+                    }
 					updateLastOpenedProfiles();
 				}
 			}
@@ -444,6 +476,7 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 				success = config.store(s.getCurrentProfile());
 			} else {
 				File last = s.getLastProfileDir();
+				/*
 				JFileChooser chooser = new JFileChooser(last);
 				JFSConfigFileFilter filter = new JFSConfigFileFilter();
 				chooser.setFileFilter(filter);
@@ -474,6 +507,37 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 						success = config.store(selectedFile);
 					}
 				}
+                */
+
+				JFSConfigFileFilter filter = new JFSConfigFileFilter();
+
+                String fileS = UIHelper.showOpenDialog(frame, last.getAbsolutePath(), false, t.get("menu.save"), t.getLocale(), filter, UIHelper.TYPE_SAVE, null);
+                
+                if (fileS != null) {
+                    File file = new File(fileS);
+                    s.setLastProfileDir(file.getParentFile());
+
+                    // If file has no extension add ".xml":
+                    if (file.getName().indexOf(".") == -1) {
+                        file = new File(file.getParentFile(),
+                                file.getName() + ".xml");
+                    }
+
+                    // If file already exists ask for overwriting:
+                    int result = JOptionPane.OK_OPTION;
+                    if (file.exists()) {
+                        JLabel msg = new JLabel(t.get("message.replace"));
+                        result = JOptionPane.showConfirmDialog(frame, msg, t
+                                .get("general.warning"),
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+                    }
+
+                    if (result == JOptionPane.OK_OPTION) {
+                        success = config.store(file);
+                    }
+                }
+				
 			}
 
 			// Show error message if saving failed:
@@ -596,13 +660,29 @@ public class JFSMainView extends WindowAdapter implements ActionListener,
 		}
 
 		if (cmd.equals("EXIT")) {
-			// Ask for exiting the program:
-			JLabel msg = new JLabel(t.get("message.exit"));
-			int result = JOptionPane.showConfirmDialog(frame, msg, t
-					.get("general.warning"), JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.WARNING_MESSAGE);
+			int result = JOptionPane.OK_OPTION;
+			if (s.isAskOnExit())
+			{
+				// Ask for exiting the program:
+				JLabel msg = new JLabel(t.get("message.exit"));
+//				result = JOptionPane.showConfirmDialog(frame, msg, t
+//						.get("general.warning"), JOptionPane.OK_CANCEL_OPTION,
+//						JOptionPane.WARNING_MESSAGE);
+				Object[] options = {t.get("general.true"),
+						t.get("button.always"),
+						t.get("general.false")};
 
-			if (result == JOptionPane.OK_OPTION) {
+				result = JOptionPane.showOptionDialog(frame, msg, t
+						.get("general.warning"), JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+			}
+
+			if (result == 1)
+			{
+				s.setAskOnExit(false);
+			}
+			
+			if (result != 2) {
 				// Store last entered profile data:
 				config.storeDefaultFile();
 

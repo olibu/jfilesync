@@ -104,6 +104,7 @@ public class JFileSync {
 		boolean stopService = false;
 		boolean loadDefaultFile = true;
 		boolean nogui = false;
+		boolean compare = false;
 		int i = 0;
 
 		// Handle command line arguments:
@@ -129,6 +130,8 @@ public class JFileSync {
 							args[i + 1]));
 					i++;
 					loadDefaultFile = false;
+				} else if (args[i].equals("-compare")) {
+					compare = true;
 				} else if (args[i].equals("-granularity")) {
 					i++;
 					config.setGranularity(Integer.parseInt(args[i]));
@@ -277,7 +280,11 @@ public class JFileSync {
 				// Determine whether the last configuration when (stored when
 				// the program was exited should be loaded at GUI startup:
 				s.setNoGui(false);
-				new JFSMainView(loadDefaultFile);
+				JFSMainView view = new JFSMainView(loadDefaultFile);
+				if (compare)
+				{
+					view.actionPerformed("COMPARE");
+				}
 			} else {
 				s.setNoGui(true);
 				JFSShell.startShell(quiet);

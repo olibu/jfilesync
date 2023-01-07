@@ -36,6 +36,8 @@ import javax.swing.JFrame;
  */
 public class JFSConst {
 
+    private static int m_isMac = -1;
+    
 	/** Stores the only instance of the class. */
 	private static JFSConst instance = null;
 
@@ -49,8 +51,20 @@ public class JFSConst {
 	public static final int HELP_HISTORY_SIZE = 15;
 
 	/** The default location for JFS configuration files. */
-	public final static String HOME_DIR = System.getProperty("user.home", ".")
+	public static String HOME_DIR = System.getProperty("user.home", ".")
 			+ File.separator + ".jfs";
+	static 
+	{
+	    if (isMac())
+	    {
+	        HOME_DIR = System.getProperty("user.home", ".") + "/Library/Application Support/JFileSync/";
+	    }
+	    else
+	    {
+	        HOME_DIR = System.getProperty("user.home", ".") + File.separator + ".jfs";
+	    }
+	    JFSLog.getOut().getStream().println("Home set to: " + HOME_DIR);
+	}
 
 	/** The current working directory. */
 	public final static String WORKING_DIR = System
@@ -71,6 +85,9 @@ public class JFSConst {
 	/** The default value for the debug mode. */
 	public final static boolean DEBUG = false;
 
+	/** Should a exit dialog be shown */
+	public final static boolean ASK_ON_EXIT = true;
+	
 	/**
 	 * The default state of the JFileSync main window (maximized, iconified,
 	 * etc.).
@@ -234,4 +251,22 @@ public class JFSConst {
 
 		return fileUrl;
 	}
+	
+    public static boolean isMac()
+    {
+        if (m_isMac == -1)
+        {
+            String osname = System.getProperty("os.name");
+            if (osname != null && osname.toLowerCase().indexOf("mac") != -1)
+            {
+                m_isMac = 1;
+            }
+            else
+            {
+                m_isMac = 0;
+            }
+        }
+        return (m_isMac == 1);
+    }
+
 }

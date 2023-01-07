@@ -33,6 +33,14 @@
 	<property name="config" location="src/jfs/resources/conf/JFSConfig.properties" />
 	<property name="src.license.template" value="docs/License-JFileSync-Sources.txt" />
 
+	
+	<property name="build.dir" value="./" />
+	<property name="appname" value="JFileSync" />
+	<property name="macfolder" value="${build.dir}/${appname}" />
+	<condition property="isUnix">
+	   <os family="unix" />
+	</condition>
+
 
 	<target name="init">
 		<description>Creates the time stamp and version number</description>
@@ -268,5 +276,59 @@
 		<delete dir="${web-preview}" />
 	</target>
 
+	<target name="mac" if="isUnix" depends="init">
+
+		<!-- Delete old data -->
+		<delete failonerror="false" followsymlinks="false">
+			<fileset followsymlinks="false" dir="${macfolder}">
+			    <include name="**/*"/>
+			</fileset>
+		</delete>
+		
+		<!-- create app -->
+		<mkdir dir="${macfolder}" />
+		<taskdef name="jarbundler"
+		             classname="net.sourceforge.jarbundler.JarBundler" />
+		<jarbundler dir="${macfolder}"
+		                name="${appname}"
+		                shortname="${appname}"
+		                infostring="Copyright Oliver Burgmaier"
+		                icon="${build.dir}/application.icns"
+		                version="${version}"
+		                mainclass="jfs.JFileSync"
+					    workingdirectory="$APP_PACKAGE/Contents/Resources/Java"
+		                jvmversion="1.5+">
+			<javaproperty name="apple.awt.graphics.UseQuartz" value="true"/>
+			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
+			<jarfileset dir="${build.dir}/lib">
+		        <include name="*.jar" />
+		    </jarfileset>
+	    </jarbundler>
+		<copy todir="${macfolder}/${appname}.app/Contents/Resources/Java">
+			<fileset dir="${build.dir}">
+				<include name="*.txt"/>
+			</fileset>
+		</copy>
+	</target>	
+	
+	<target name="macdmg" if="isUnix">
+		<!-- cleanup -->
+		<delete failonerror="false" file="${build.dir}/${appname}.dmg"></delete>
+
+		<!-- create dmg -->
+		<exec executable="ln">
+		    <arg line="-s /Applications/"/>
+		    <arg value="${macfolder}/Applications"/>
+		</exec>
+        <exec executable="hdiutil">
+            <arg line="create -srcfolder ${macfolder} ${build.dir}/${appname}.dmg"/>
+        </exec>
+		
+		<!-- system dependend cleanup -->
+		<exec executable="rm">
+		    <arg line="${macfolder}/Applications"/>
+		</exec>
+
+	</target>
 
 </project>

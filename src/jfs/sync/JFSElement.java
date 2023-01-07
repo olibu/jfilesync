@@ -23,6 +23,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import jfs.conf.JFSConfig;
+import jfs.conf.JFSSettings;
 import jfs.conf.JFSSyncModes;
 import jfs.conf.JFSSyncMode.SyncAction;
 
@@ -134,6 +135,10 @@ public class JFSElement implements Comparable<JFSElement> {
 				tgtLastModified = tgtFile.getLastModified();
 		}
 
+//		if (srcFile != null)
+//		{
+//			System.out.println(srcFile.getName());
+//		}
 		// Comparison:
 		// Under the DOS and Windows FAT file system, the finest granularity on
 		// time resolution is two seconds. So we have a maximum tolerance range
@@ -367,6 +372,9 @@ public class JFSElement implements Comparable<JFSElement> {
 	/**
 	 * Compares two time stamps taking into account the specified granularity of
 	 * the configuration object.
+	 * <p>
+	 * The granularity and the ignoreTimeDiff will be subtracted from the time 
+	 * difference. 3600000 represents 1 hour.
 	 * 
 	 * @param time1
 	 *            The first time stamp.
@@ -377,7 +385,25 @@ public class JFSElement implements Comparable<JFSElement> {
 	 *         second time stamp is newer than the first one.
 	 */
 	public static long compareToTime(long time1, long time2) {
-		return (time1 - time2) / JFSConfig.getInstance().getGranularity();
+		long diff = (time1 - time2) / JFSConfig.getInstance().getGranularity();
+		if (diff == 0 || diff == 1 || diff == -1)
+		{
+			return 0;
+		}
+		long ignore = JFSSettings.getInstance().getIgnoreTimeDiff();
+//		System.out.println((time1 - time2));
+		if (ignore>0)
+		{
+			if ((time1 - time2 - ignore) / JFSConfig.getInstance().getGranularity()==0)
+			{
+				return 0;
+			}
+			else if ((time1 - time2 + ignore) / JFSConfig.getInstance().getGranularity()==0)
+			{
+				return 0;
+			}
+		}
+		return diff; 
 
 	}
 

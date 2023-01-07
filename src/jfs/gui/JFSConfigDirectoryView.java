@@ -220,6 +220,7 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 			if (type == 0) {
 				JFSSettings settings = JFSSettings.getInstance();
 
+				/*
 				int returnVal;
 				JFileChooser chooser = new JFileChooser();
 				chooser.setApproveButtonText(t.get("button.select"));
@@ -249,16 +250,36 @@ public class JFSConfigDirectoryView extends JDialog implements ActionListener {
 					returnVal = chooser.showOpenDialog(this);
 					settings.setLastTgtPairDir(chooser.getCurrentDirectory());
 				}
+				*/
+				String selFile = null;
+
+                // Get file:
+                if (isSource) {
+                    if (srcElement.getText().trim().equals("")) {
+                        selFile = UIHelper.showOpenDialog(this, settings.getLastSrcPairDir().getAbsolutePath(), true, t.get("profile.dir.getSrc.title"), t.getLocale(), null, UIHelper.TYPE_OPEN, t.get("button.select"));
+                    } else {
+                        selFile = UIHelper.showOpenDialog(this, srcElement.getText(), true, t.get("profile.dir.getSrc.title"), t.getLocale(), null, UIHelper.TYPE_OPEN, t.get("button.select"));
+                    }
+                    if (selFile!=null)
+                        settings.setLastSrcPairDir(new File(selFile));
+                } else {
+                    if (tgtElement.getText().trim().equals("")) {
+                        selFile = UIHelper.showOpenDialog(this, settings.getLastTgtPairDir().getAbsolutePath(), true, t.get("profile.dir.getTgt.title"), t.getLocale(), null, UIHelper.TYPE_OPEN, t.get("button.select"));
+                    } else {
+                        selFile = UIHelper.showOpenDialog(this, tgtElement.getText(), true, t.get("profile.dir.getTgt.title"), t.getLocale(), null, UIHelper.TYPE_OPEN, t.get("button.select"));
+                    }
+                    if (selFile!=null)
+                        settings.setLastTgtPairDir(new File(selFile));
+                }
 
 				// Set file and check for existence:
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					String directory = chooser.getSelectedFile().getPath();
+				if (selFile != null) {
 					if (isSource) {
-						srcElement.setText(directory);
+						srcElement.setText(selFile);
 					} else {
-						tgtElement.setText(directory);
+						tgtElement.setText(selFile);
 					}
-					JFSConfigView.createDirectoryDialog(this, directory);
+					JFSConfigView.createDirectoryDialog(this, selFile);
 				}
 			} else {
 				// Create dialog:

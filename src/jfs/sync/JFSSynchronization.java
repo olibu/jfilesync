@@ -20,6 +20,8 @@
 package jfs.sync;
 
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jfs.conf.JFSConfig;
 import jfs.conf.JFSHistoryManager;
@@ -40,7 +42,8 @@ import jfs.sync.JFSQuestion.QuestionAnswer;
  * @version $Id: JFSSynchronization.java,v 1.33 2007/06/05 16:09:41 heidrich Exp $
  */
 public class JFSSynchronization {
-
+    private static final Logger logger = Logger.getLogger(JFSSynchronization.class.getName());
+    
 	/** Stores the only instance of the class. */
 	private static JFSSynchronization instance = null;
 
@@ -193,6 +196,7 @@ public class JFSSynchronization {
 			// Delete only if the delete flag is set and the success flag is
 			// false:
 			if (ds.getDeleteFlag() && !ds.getSuccess()) {
+			    logger.log(Level.FINE, "Delete file: " + ds.getFile().relativePath);
 				success = ds.getFile().delete();
 				ds.setSuccess(success);
 
@@ -229,6 +233,7 @@ public class JFSSynchronization {
 
 			// Copy only if the copy flag is set and the success flag is false:
 			if (cs.getCopyFlag() && !cs.getSuccess()) {
+	            logger.log(Level.FINE, "Copy file: " + cs.getSrc().relativePath);
 				cm.setBytesToTransferCurrentFile(cs.getSrc().getLength());
 				success = cs.getSrc().copy(cs.getTgt());
 				cs.setSuccess(success);
