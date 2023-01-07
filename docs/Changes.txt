@@ -1,5 +1,5 @@
 JFileSync Change History
-Version 2.2.1
+Version 3.0.0
 - Added new context action to compare source and target file by configured
   compare application in settings.xml
 - Added new context action to add filter by selected file/folder
