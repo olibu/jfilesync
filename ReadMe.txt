@@ -1,4 +1,5 @@
-JFileSync, Version 2.2
+JFileSync, Version 2.2.1
+Copyright (C) 2022-2023, Oliver Burgmaier
 Copyright (C) 2002-2007, Jens Heidrich
 
 Release Notes
